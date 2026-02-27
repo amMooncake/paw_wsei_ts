@@ -2,19 +2,15 @@ import { useState } from "react";
 import { projectApi } from "../api/projectApi";
 import type { Dispatch, SetStateAction } from "react";
 
+
 import type { Project, ProjectForm } from "../models/project";
+import { emptyForm } from "../models/project";
 
 
 import { LuPencil } from "react-icons/lu";
 import { LuTrash2 } from "react-icons/lu";
 import { LuCheck } from "react-icons/lu";
 import { LuX } from 'react-icons/lu';
-
-
-const emptyForm: ProjectForm = {
-    name: '',
-    description: '',
-}
 
 
 export default function DataTable({ projects, setProjects }: { projects: Project[], setProjects: Dispatch<SetStateAction<Project[]>> }) {

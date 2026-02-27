@@ -5,3 +5,9 @@ export interface Project {
 }
 
 export type ProjectForm = Omit<Project, 'id'>
+
+
+export const emptyForm: ProjectForm = {
+  name: '',
+  description: '',
+}
