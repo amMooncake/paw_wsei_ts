@@ -1,7 +1,7 @@
 export interface Project {
   id: string
-  nazwa: string
-  opis: string
+  name: string
+  description: string
 }
 
 

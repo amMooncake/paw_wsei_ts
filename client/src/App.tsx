@@ -1,34 +1,62 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import type { Project } from './models/project'
+import { projectApi } from './api/projectApi'
+
+type ProjectForm = Omit<Project, 'id'>
+
+const emptyForm: ProjectForm = {
+  name: '',
+  description: '',
+}
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [form, setForm] = useState<ProjectForm>(emptyForm)
+
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    projectApi.create(form)
+  }
+
+  const getAllProjects = () => {
+    console.log(projectApi.getAll())
+
+  }
+
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <main className="min-h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center">
+        <h1 className='text-3xl font-bold'>ManageMe</h1>
+
+        <form className="flex flex-col gap-2" onSubmit={handleSubmit}>
+          <input
+            className='border-2'
+            type="text"
+            value={form.name}
+            placeholder="Nazwa projektu"
+            onChange={(event) => setForm({ ...form, name: event.target.value })}
+          />
+
+          <textarea
+            className='border-2'
+            value={form.description}
+            placeholder="Opis projektu"
+            onChange={(event) => setForm({ ...form, description: event.target.value })}
+          />
+          <button className='border-2' type="submit">
+            Dodaj
+          </button>
+          <button className='border-2' type="button" onClick={getAllProjects}>
+            Wyświetl projekty
+          </button>
+
+        </form>
+
+
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </main>
+
   )
 }
 
