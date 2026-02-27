@@ -1,8 +1,14 @@
 import { useState } from 'react'
-import type { Project } from './models/project'
+import type { Project, ProjectForm } from './models/project'
 import { projectApi } from './api/projectApi'
+import { LuPencil } from "react-icons/lu";
+import { LuTrash2 } from "react-icons/lu";
+import { LuCheck } from "react-icons/lu";
 
-type ProjectForm = Omit<Project, 'id'>
+
+
+
+
 
 const emptyForm: ProjectForm = {
   name: '',
@@ -10,23 +16,53 @@ const emptyForm: ProjectForm = {
 }
 
 function App() {
-  const [form, setForm] = useState<ProjectForm>(emptyForm)
+  const [createForm, setCreateForm] = useState<ProjectForm>(emptyForm)
+  const [editForm, setEditForm] = useState<ProjectForm>(emptyForm)
   const [projects, setProjects] = useState<Project[]>(projectApi.getAll())
+  const [editingId, setEditingId] = useState<string | null>(null)
 
+  function handleEdit(): void {
+    if (!editingId) return
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    projectApi.create(form)
-    setForm(emptyForm)
+    projectApi.update({
+      id: editingId,
+      ...editForm,
+    })
+
+    setEditingId(null)
+    setEditForm(emptyForm)
     setProjects(projectApi.getAll())
   }
 
-  const getAllProjects = () => {
-    projectApi.logAll()
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
+    event.preventDefault()
+    projectApi.create(createForm)
+
+    setCreateForm(emptyForm)
+    setProjects(projectApi.getAll())
   }
 
+  const startEdit = (project: Project) => {
+    if (editingId === project.id) {
+      handleEdit()
+      return
+    }
+    setEditingId(project.id)
+    setEditForm({
+      name: project.name,
+      description: project.description,
+    })
+  }
 
+  const deleteProject = (id: string) => {
+    projectApi.delete(id)
+    setProjects(projectApi.getAll())
 
+    if (editingId === id) {
+      setEditingId(null)
+      setEditForm(emptyForm)
+    }
+  }
 
   return (
     <main className="min-h-screen flex justify-center p-10">
@@ -37,47 +73,75 @@ function App() {
           <input
             className='border-2'
             type="text"
-            value={form.name}
+            value={createForm.name}
             placeholder="Nazwa projektu"
-            onChange={(event) => setForm({ ...form, name: event.target.value })}
+            onChange={(event) => setCreateForm({ ...createForm, name: event.target.value })}
           />
 
           <textarea
             className='border-2'
-            value={form.description}
+            value={createForm.description}
             placeholder="Opis projektu"
-            onChange={(event) => setForm({ ...form, description: event.target.value })}
+            onChange={(event) => setCreateForm({ ...createForm, description: event.target.value })}
           />
           <button className='border-2' type="submit">
-            Dodaj
+            dodaj
           </button>
-          <button className='border-2' type="button" onClick={getAllProjects}>
+          <button className='border-2' type="button" onClick={projectApi.logAll}>
             Wyświetl projekty
           </button>
-
         </form>
 
         <table>
           <thead>
-            <tr className="[&>*]:p-2">
+            <tr className="[&>*]:p-2 [&>*]:border-2 [&>*]:border-collapse ">
               <th>id</th>
               <th>Nazwa</th>
               <th>Opis</th>
+              <th>Akcje</th>
             </tr>
           </thead>
           <tbody>
             {projects.map((project) => (
-              <tr key={project.id} className="odd:bg-gray-200 [&>*]:p-2">
+              <tr key={project.id} className="odd:bg-gray-200 [&>*]:p-2 [&>*]:border-2 [&>*]:border-collapse">
                 <td>{project.id}</td>
-                <td>{project.name}</td>
-                <td>{project.description}</td>
+                <td>{editingId !== project.id ?
+                  project.name
+                  :
+                  (<input
+                    className='border-2'
+                    type="text"
+                    value={editForm.name}
+                    placeholder="Nazwa projektu"
+                    onChange={(event) => setEditForm({ ...editForm, name: event.target.value })} />
+                  )}
+                </td>
+                <td>
+                  {editingId !== project.id ?
+                    project.description
+                    :
+                    (<input
+                      className='border-2'
+                      type="text"
+                      value={editForm.description}
+                      placeholder="Nazwa projektu"
+                      onChange={(event) => setEditForm({ ...editForm, description: event.target.value })} />
+                    )}
+                </td>
+                <td>
+                  <div className="flex gap-2">
+                    <button type="button" title="Edytuj" aria-label="Edytuj" onClick={() => startEdit(project)}>
+                      <LuPencil className="w-4 h-4" />
+                    </button>
+                    <button type="button" title="Usuń" aria-label="Usuń" onClick={() => deleteProject(project.id)}>
+                      <LuTrash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
-
-
-
       </div>
     </main>
 

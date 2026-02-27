@@ -4,4 +4,4 @@ export interface Project {
   description: string
 }
 
-
+export type ProjectForm = Omit<Project, 'id'>
