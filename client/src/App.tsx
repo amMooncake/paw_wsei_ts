@@ -11,25 +11,29 @@ const emptyForm: ProjectForm = {
 
 function App() {
   const [form, setForm] = useState<ProjectForm>(emptyForm)
+  const [projects, setProjects] = useState<Project[]>(projectApi.getAll())
 
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     projectApi.create(form)
+    setForm(emptyForm)
+    setProjects(projectApi.getAll())
   }
 
   const getAllProjects = () => {
-    console.log(projectApi.getAll())
-
+    projectApi.logAll()
   }
 
 
+
+
   return (
-    <main className="min-h-screen flex items-center justify-center">
-      <div className="flex flex-col items-center">
+    <main className="min-h-screen flex justify-center p-10">
+      <div className="flex flex-col items-center gap-10">
         <h1 className='text-3xl font-bold'>ManageMe</h1>
 
-        <form className="flex flex-col gap-2" onSubmit={handleSubmit}>
+        <form id='project-form' className='flex flex-col gap-2' onSubmit={handleSubmit}>
           <input
             className='border-2'
             type="text"
@@ -52,6 +56,26 @@ function App() {
           </button>
 
         </form>
+
+        <table>
+          <thead>
+            <tr className="[&>*]:p-2">
+              <th>id</th>
+              <th>Nazwa</th>
+              <th>Opis</th>
+            </tr>
+          </thead>
+          <tbody>
+            {projects.map((project) => (
+              <tr key={project.id} className="odd:bg-gray-200 [&>*]:p-2">
+                <td>{project.id}</td>
+                <td>{project.name}</td>
+                <td>{project.description}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
 
 
       </div>
