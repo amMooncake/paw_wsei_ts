@@ -4,10 +4,7 @@ import { projectApi } from './api/projectApi'
 import { LuPencil } from "react-icons/lu";
 import { LuTrash2 } from "react-icons/lu";
 import { LuCheck } from "react-icons/lu";
-
-
-
-
+import { LuX } from 'react-icons/lu';
 
 
 const emptyForm: ProjectForm = {
@@ -15,7 +12,7 @@ const emptyForm: ProjectForm = {
   description: '',
 }
 
-function App() {
+export default function App() {
   const [createForm, setCreateForm] = useState<ProjectForm>(emptyForm)
   const [editForm, setEditForm] = useState<ProjectForm>(emptyForm)
   const [projects, setProjects] = useState<Project[]>(projectApi.getAll())
@@ -23,18 +20,18 @@ function App() {
 
   function handleEdit(): void {
     if (!editingId) return
-
     projectApi.update({
       id: editingId,
       ...editForm,
     })
-
     setEditingId(null)
-    setEditForm(emptyForm)
     setProjects(projectApi.getAll())
   }
+  function handleCanelEdit(): void {
+    setEditingId(null)
+  }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
+  function handleSubmit(event: React.ChangeEvent<HTMLFormElement>): void {
     event.preventDefault()
     projectApi.create(createForm)
 
@@ -42,11 +39,7 @@ function App() {
     setProjects(projectApi.getAll())
   }
 
-  const startEdit = (project: Project) => {
-    if (editingId === project.id) {
-      handleEdit()
-      return
-    }
+  function startEdit(project: Project) {
     setEditingId(project.id)
     setEditForm({
       name: project.name,
@@ -54,7 +47,7 @@ function App() {
     })
   }
 
-  const deleteProject = (id: string) => {
+  function deleteProject(id: string) {
     projectApi.delete(id)
     setProjects(projectApi.getAll())
 
@@ -124,17 +117,30 @@ function App() {
                       className='border-2'
                       type="text"
                       value={editForm.description}
-                      placeholder="Nazwa projektu"
+                      placeholder="Opis projektu"
                       onChange={(event) => setEditForm({ ...editForm, description: event.target.value })} />
                     )}
                 </td>
                 <td>
                   <div className="flex gap-2">
-                    <button type="button" title="Edytuj" aria-label="Edytuj" onClick={() => startEdit(project)}>
-                      <LuPencil className="w-4 h-4" />
-                    </button>
+                    {editingId === project.id ?
+                      <div className='flex flex-row gap-2'>
+                        <button type="button" title="Edytuj" aria-label="Edytuj" onClick={() => handleEdit()}>
+                          <LuCheck className="w-6 h-6 bg-green-500 text-white rounded-full p-0.5" />
+                        </button>
+                        <button type="button" title="Anuluj" aria-label="Anuluj" onClick={() => handleCanelEdit()}>
+                          <LuX className="w-6 h-6 bg-red-500 text-white rounded-full p-0.5" />
+                        </button>
+                      </div>
+                      :
+                      <button type="button" title="Edytuj" aria-label="Edytuj" onClick={() => startEdit(project)}>
+                        <LuPencil className="w-6 h-6" />
+                      </button>
+                    }
+
+
                     <button type="button" title="Usuń" aria-label="Usuń" onClick={() => deleteProject(project.id)}>
-                      <LuTrash2 className="w-4 h-4" />
+                      <LuTrash2 className="w-6 h-6" />
                     </button>
                   </div>
                 </td>
@@ -148,4 +154,4 @@ function App() {
   )
 }
 
-export default App
+
