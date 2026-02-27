@@ -11,7 +11,7 @@ export default function App() {
   const [projects, setProjects] = useState<Project[]>(projectApi.getAll())
 
   return (
-    <main  className="min-h-screen flex flex-col items-center justify-start p-10 gap-10">
+    <main  className="notebook-grid min-h-screen w-full flex flex-col items-center justify-start p-10 gap-10">
 
       <h1 className='text-3xl font-bold'>ManageMe</h1>
       <ProjectForm setProjects={setProjects} />

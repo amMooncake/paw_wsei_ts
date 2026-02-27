@@ -1,9 +1,12 @@
 import { useState, type Dispatch, type SetStateAction } from 'react';
 
 import { projectApi } from '../api/projectApi';
+import Input from './ui/NeuInput';
+import Textarea from './ui/NeuTextarea';
 
 import type { Project, ProjectForm } from '../models/project'
 import { emptyForm } from "../models/project";
+import NeuButton from './ui/NeuButtonBlue';
 
 
 
@@ -22,22 +25,22 @@ export default function ProjectForm({ setProjects }: { setProjects: Dispatch<Set
   return <>
 
     <form id='project-form' className='flex flex-col gap-2' onSubmit={handleSubmit}>
-      <input
-        className='border-2'
+      <Input
         type="text"
         value={createForm.name}
         placeholder="Nazwa projektu"
         onChange={(event) => setCreateForm({ ...createForm, name: event.target.value })}
       />
 
-      <textarea
-        className='border-2'
+      <Textarea
         value={createForm.description}
         placeholder="Opis projektu"
         onChange={(event) => setCreateForm({ ...createForm, description: event.target.value })}
       />
 
-      <button className='border-2' type="submit"> dodaj </button>
+      <NeuButton type="submit" className='bg-blue-700'>
+        Dodaj
+      </NeuButton>
       {/* <button className='border-2' type="button" onClick={projectApi.logAll}> Wyświetl projekty </button> */}
     </form>
   </>
