@@ -53,25 +53,25 @@ export default function DataTable({ projects, setProjects }: { projects: Project
 
 
     return <div className="max-w-full overflow-x-auto">
-        <table className="w-auto table-auto bg-white border-b-4 border-black">
+        <table className="w-full table-auto bg-white border-b-4 border-black">
             <thead>
                 <tr className="bg-yellow-300 [&>*]:p-2 [&>*]:border-2 [&>*]:border-zinc-900 [&>*]:font-black [&>*]:uppercase [&>*]:tracking-wide">
                     <th>id</th>
                     <th>Nazwa</th>
                     <th>Opis</th>
-                    <th>Akcje</th>
+                    <th className="w-px whitespace-nowrap">Akcje</th>
                 </tr>
             </thead>
             <tbody>
                 {projects.map((project) => (
-                    <tr key={project.id} className="even:bg-white odd:bg-zinc-100 [&>*]:p-2 [&>*]:border-2 [&>*]:border-black [&>*]:align-middle">
+                    <tr key={project.id} className="even:bg-white odd:bg-zinc-200 [&>*]:p-2 [&>*]:border-2 [&>*]:border-black [&>*]:align-middle">
                         <td>{project.id.slice(0, 4)}...</td>
                         <td>{editingId !== project.id ?
                             project.name
                             :
                             (<Input
                                 type="text"
-                                className='p-0 px-2'
+                                className='p-0 px-2 w-full min-w-10'
                                 value={editForm.name}
                                 placeholder="Nazwa projektu"
                                 onChange={(event) => setEditForm({ ...editForm, name: event.target.value })} />
@@ -83,14 +83,14 @@ export default function DataTable({ projects, setProjects }: { projects: Project
                                 :
                                 (<Input
                                     type="text"
-                                    className='p-0 px-2'
+                                    className='p-0 px-2 w-full min-w-10'
                                     value={editForm.description}
                                     placeholder="Opis projektu"
                                     onChange={(event) => setEditForm({ ...editForm, description: event.target.value })} />
                                 )}
                         </td>
-                        <td>
-                            <div className="flex gap-2">
+                        <td className="w-px whitespace-nowrap">
+                            <div className="inline-flex gap-2">
                                 {editingId === project.id ?
                                     <div className='flex flex-row gap-2'>
                                         <NeuButton className="bg-green-400 p-1 text-black" onClick={() => handleEdit()}>

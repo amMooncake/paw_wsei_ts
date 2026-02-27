@@ -12,8 +12,8 @@ import NeuButton from './ui/NeuButtonBlue';
 
 export default function ProjectForm({ setProjects }: { setProjects: Dispatch<SetStateAction<Project[]>> }) {
 
-    const [createForm, setCreateForm] = useState<ProjectForm>(emptyForm)
-  
+  const [createForm, setCreateForm] = useState<ProjectForm>(emptyForm)
+
   function handleSubmit(event: React.ChangeEvent<HTMLFormElement>): void {
     event.preventDefault()
     projectApi.create(createForm)
@@ -38,7 +38,7 @@ export default function ProjectForm({ setProjects }: { setProjects: Dispatch<Set
         onChange={(event) => setCreateForm({ ...createForm, description: event.target.value })}
       />
 
-      <NeuButton type="submit" className='bg-blue-700'>
+      <NeuButton type="submit" className='bg-blue-700 text-xl font-bold'>
         Dodaj
       </NeuButton>
       {/* <button className='border-2' type="button" onClick={projectApi.logAll}> Wyświetl projekty </button> */}
