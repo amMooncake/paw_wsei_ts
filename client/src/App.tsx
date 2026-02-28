@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { ToastContainer } from 'react-toastify'
+import { Slide, ToastContainer } from 'react-toastify'
 
 import { projectApi } from './api/projectApi'
 import DataTable from './components/dataTable'
 import ProjectForm from './components/ProjectForm'
 import ManageMeLogo from './components/ui/ManageMeLogo'
+
 
 import type { Project } from './models/project'
 
@@ -14,12 +15,15 @@ export default function App() {
 
   return (
     <div className="notebook-grid min-h-screen w-full flex flex-col items-center justify-start p-10 gap-10">
+
       <ToastContainer
-        position='top-right'
+        stacked
+        position='bottom-center'
         autoClose={2500}
-        toastClassName='neubrutalism-toast'
-        progressClassName='neubrutalism-toast-progress'
+        theme='light'
+        transition={Slide}
       />
+
       <ManageMeLogo />
 
       <main className='grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-10 w-full max-w-7xl'>
