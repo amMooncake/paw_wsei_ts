@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ToastContainer } from 'react-toastify'
 
 import { projectApi } from './api/projectApi'
 import DataTable from './components/dataTable'
@@ -13,6 +14,12 @@ export default function App() {
 
   return (
     <div className="notebook-grid min-h-screen w-full flex flex-col items-center justify-start p-10 gap-10">
+      <ToastContainer
+        position='top-right'
+        autoClose={2500}
+        toastClassName='neubrutalism-toast'
+        progressClassName='neubrutalism-toast-progress'
+      />
       <ManageMeLogo />
 
       <main className='grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-10 w-full max-w-7xl'>
