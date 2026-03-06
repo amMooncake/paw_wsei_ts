@@ -4,7 +4,7 @@ import { projectApi } from '../api/projectApi'
 import { emptyStoryForm, type Project, type StoryForm, type Story } from '../models/project'
 import { tableStyles } from './ui/tableStyles'
 
-import { LuArrowDown, LuArrowUp } from "react-icons/lu";
+import { LuPencil, LuCheck, LuX, LuArrowDown, LuArrowUp, LuTrash2 } from "react-icons/lu";
 
 
 import NeuButton from './ui/NeuButtonBlue'
@@ -23,6 +23,12 @@ const heading2Style = "text-1xl font-black uppercase tracking-wide" as const
 export default function ProjectStories({ project, onBack, userId }: ProjectStoriesProps) {
     const [createForm, setCreateForm] = useState<StoryForm>({ ...emptyStoryForm, ownerId: userId })
     const [stories, setStories] = useState<Story[]>([])
+    const [editingId, setEditingId] = useState<string | null>(null)
+    const [editForm, setEditForm] = useState<Pick<Story, 'title' | 'description' | 'priority'>>({
+        title: '',
+        description: '',
+        priority: 'Low',
+    })
     const projectId = project.id
 
 
@@ -52,6 +58,104 @@ export default function ProjectStories({ project, onBack, userId }: ProjectStori
         await projectApi.higherStatusStory(projectId, storyId)
         const updatedStories = await projectApi.getStories(projectId)
         setStories(updatedStories)
+    }
+
+
+    async function handleDeleteStory(storyId: string) {
+        await projectApi.removeStory(projectId, storyId)
+        if (editingId === storyId) {
+            setEditingId(null)
+            setEditForm({ title: '', description: '', priority: 'Low' })
+        }
+        const updatedStories = await projectApi.getStories(projectId)
+        setStories(updatedStories)
+    }
+
+    function startEdit(story: Story) {
+        setEditingId(story.id)
+        setEditForm({
+            title: story.title,
+            description: story.description,
+            priority: story.priority,
+        })
+    }
+
+    function handleCancelEdit() {
+        setEditingId(null)
+        setEditForm({ title: '', description: '', priority: 'Low' })
+    }
+
+    async function handleSaveEdit() {
+        if (!editingId) {
+            return
+        }
+
+        await projectApi.editStory(projectId, editingId, editForm)
+        const updatedStories = await projectApi.getStories(projectId)
+        setStories(updatedStories)
+        handleCancelEdit()
+    }
+
+    function renderStoryRow(story: Story) {
+        const isEditing = editingId === story.id
+
+        return (
+            <tr className={tableStyles.bodyRow} key={story.id}>
+                <td>
+                    {isEditing ? (
+                        <Input
+                            type="text"
+                            value={editForm.title}
+                            placeholder="Nazwa"
+                            onChange={(event) => setEditForm({ ...editForm, title: event.target.value })}
+                        />
+                    ) : (
+                        story.title
+                    )}
+                </td>
+                <td>
+                    {isEditing ? (
+                        <Input
+                            value={editForm.description}
+                            placeholder="Opis"
+                            onChange={(event) => setEditForm({ ...editForm, description: event.target.value })}
+                        />
+                    ) : (
+                        story.description
+                    )}
+                </td>
+                <td>{new Date(story.creationDate).toLocaleString('pl-PL', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                })}</td>
+                <td>
+                    {isEditing ? (
+                        <select
+                            className="border-2 border-black rounded px-2 py-1 bg-white"
+                            value={editForm.priority}
+                            onChange={(event) => setEditForm({ ...editForm, priority: event.target.value as Story['priority'] })}
+                        >
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    ) : (
+                        story.priority
+                    )}
+                </td>
+                <StoryActionsCell
+                    story={story}
+                    isEditing={isEditing}
+                    onLowerStatus={handleLowerStatus}
+                    onHigherStatus={handleHigherStatus}
+                    onRemove={handleDeleteStory}
+                    onStartEdit={startEdit}
+                    onSaveEdit={handleSaveEdit}
+                    onCancelEdit={handleCancelEdit}
+                />
+            </tr>
+        )
     }
 
     return (
@@ -95,85 +199,76 @@ export default function ProjectStories({ project, onBack, userId }: ProjectStori
                     </form>
                     <div className="flex flex-col w-full text-left gap-5">
                         <StoryTable header="Kiedyś się tym zajme" headerClassName="!bg-yellow-300" >
-                            {stories.filter((story) => story.status === 'To Do').map((story) => (
-                                <tr className={tableStyles.bodyRow} key={story.id}>
-                                    <td>{story.title}</td>
-                                    <td>{story.description}</td>
-                                    <td>{new Date(story.creationDate).toLocaleString('pl-PL', {
-                                        year: 'numeric',
-                                        month: '2-digit',
-                                        day: '2-digit',
-                                    })}</td>
-                                    <td>{story.priority}</td>
-                                    <td className={tableStyles.actionsCell}>
-                                        <div className={tableStyles.actionsContainer}>
-                                            <NeuButton className="!bg-blue-300 p-1 text-black" onClick={() => { handleLowerStatus(story.id) }} title="Edit" aria-label="Edit">
-                                                <LuArrowDown className="w-6 h-6 text-black" />
-                                            </NeuButton>
-                                            <NeuButton className="!bg-blue-300 p-1 text-black" onClick={() => { handleHigherStatus(story.id) }} title="Edit" aria-label="Edit">
-                                                <LuArrowUp className="w-6 h-6 text-black" />
-                                            </NeuButton>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                            {stories.filter((story) => story.status === 'To Do').map((story) => renderStoryRow(story))}
 
                         </StoryTable>
 
                         <StoryTable header="Robię" headerClassName="!bg-blue-300" >
-                            {stories.filter((story) => story.status === 'In Progress').map((story) => (
-                                <tr className={tableStyles.bodyRow} key={story.id}>
-                                    <td>{story.title}</td>
-                                    <td>{story.description}</td>
-                                    <td>{new Date(story.creationDate).toLocaleString('pl-PL', {
-                                        year: 'numeric',
-                                        month: '2-digit',
-                                        day: '2-digit',
-                                    })}</td>
-                                    <td>{story.priority}</td>
-                                    <td className={tableStyles.actionsCell}>
-                                        <div className={tableStyles.actionsContainer}>
-                                            <NeuButton className="!bg-blue-300 p-1 text-black" onClick={() => { handleLowerStatus(story.id) }} title="Edit" aria-label="Edit">
-                                                <LuArrowDown className="w-6 h-6 text-black" />
-                                            </NeuButton>
-                                            <NeuButton className="!bg-blue-300 p-1 text-black" onClick={() => { handleHigherStatus(story.id) }} title="Edit" aria-label="Edit">
-                                                <LuArrowUp className="w-6 h-6 text-black" />
-                                            </NeuButton>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                            {stories.filter((story) => story.status === 'In Progress').map((story) => renderStoryRow(story))}
                         </StoryTable>
 
                         <StoryTable header="Zrobione" headerClassName="!bg-green-300" >
-                            {stories.filter((story) => story.status === 'Done').map((story) => (
-                                <tr className={tableStyles.bodyRow} key={story.id}>
-                                    <td>{story.title}</td>
-                                    <td>{story.description}</td>
-                                    <td>{new Date(story.creationDate).toLocaleString('pl-PL', {
-                                        year: 'numeric',
-                                        month: '2-digit',
-                                        day: '2-digit',
-                                    })}</td>
-                                    <td>{story.priority}</td>
-                                    <td className={tableStyles.actionsCell}>
-                                        <div className={tableStyles.actionsContainer}>
-                                            <NeuButton className="!bg-blue-300 p-1 text-black" onClick={() => { handleLowerStatus(story.id) }} title="Edit" aria-label="Edit">
-                                                <LuArrowDown className="w-6 h-6 text-black" />
-                                            </NeuButton>
-                                            <NeuButton className="!bg-blue-300 p-1 text-black" onClick={() => { handleHigherStatus(story.id) }} title="Edit" aria-label="Edit">
-                                                <LuArrowUp className="w-6 h-6 text-black" />
-                                            </NeuButton>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                            {stories.filter((story) => story.status === 'Done').map((story) => renderStoryRow(story))}
                         </StoryTable>
 
                     </div>
                 </div>
             </section>
         </div >
+    )
+}
+
+function StoryActionsCell({
+    story,
+    isEditing,
+    onLowerStatus,
+    onHigherStatus,
+    onRemove,
+    onStartEdit,
+    onSaveEdit,
+    onCancelEdit,
+}: {
+    story: Story
+    isEditing: boolean
+    onLowerStatus: (storyId: string) => Promise<void>
+    onHigherStatus: (storyId: string) => Promise<void>
+    onRemove: (storyId: string) => Promise<void>
+    onStartEdit: (story: Story) => void
+    onSaveEdit: () => Promise<void>
+    onCancelEdit: () => void
+}) {
+    const storyId = story.id
+
+    return (
+        <td className={tableStyles.actionsCell}>
+            <div className={tableStyles.actionsContainer}>
+                <NeuButton className="!bg-amber-200 p-1 text-black" onClick={() => { void onLowerStatus(storyId) }} title="Move down" aria-label="Move down">
+                    <LuArrowDown className="w-6 h-6 text-black" />
+                </NeuButton>
+                <NeuButton className="!bg-emerald-200 p-1 text-black" onClick={() => { void onHigherStatus(storyId) }} title="Move up" aria-label="Move up">
+                    <LuArrowUp className="w-6 h-6 text-black" />
+                </NeuButton>
+                <NeuButton className="bg-orange-300 p-1 text-black" title="Delete" aria-label="Delete" onClick={() => { void onRemove(storyId) }}>
+                    <LuTrash2 className="w-6 h-6 text-black" />
+                </NeuButton>
+
+                {isEditing ?
+                    <div className='flex flex-row gap-2'>
+                        <NeuButton className="bg-green-400 p-1 text-black" onClick={() => { void onSaveEdit() }} title="Save" aria-label="Save">
+                            <LuCheck className="w-6 h-6 text-black" />
+                        </NeuButton>
+                        <NeuButton className="bg-red-400 p-1 text-black" onClick={onCancelEdit} title="Cancel" aria-label="Cancel">
+                            <LuX className="w-6 h-6 text-black" />
+                        </NeuButton>
+                    </div>
+                    :
+                    <NeuButton className="!bg-blue-300 p-1 text-black" onClick={() => onStartEdit(story)} title="Edit" aria-label="Edit">
+                        <LuPencil className="w-6 h-6 text-black" />
+                    </NeuButton>
+                }
+
+            </div>
+        </td>
     )
 }
 

@@ -7,11 +7,7 @@ import type { Project, ProjectForm } from "../models/project";
 import { emptyForm } from "../models/project";
 
 
-import { LuPencil } from "react-icons/lu";
-import { LuTrash2 } from "react-icons/lu";
-import { LuCheck } from "react-icons/lu";
-import { LuX } from 'react-icons/lu';
-import { LuSquareArrowOutUpRight } from "react-icons/lu";
+import {LuPencil, LuTrash2, LuCheck, LuX, LuSquareArrowOutUpRight } from 'react-icons/lu';
 
 import Input from "./ui/NeuInput";
 import NeuButton from "./ui/NeuButtonBlue";

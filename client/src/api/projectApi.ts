@@ -109,6 +109,28 @@ export const projectApi = {
     return Promise.resolve()
   },
 
+  removeStory(projectId: string, storyId: string): Promise<void> {
+    const projects = readProjects()
+    const project = projects.find((p) => p.id === projectId)
+    if (project) {
+      project.stories = project.stories.filter((s) => s.id !== storyId)
+    }
+    saveProjects(projects)
+    return Promise.resolve()
+  },
+
+  editStory(projectId: string, storyId: string, updatedData: Partial<Story>): Promise<void> {
+    const projects = readProjects()
+    const project = projects.find((p) => p.id === projectId)
+    if (project) {
+      const storyIndex = project.stories.findIndex((s) => s.id === storyId)
+      if (storyIndex !== -1) {
+        project.stories[storyIndex] = { ...project.stories[storyIndex], ...updatedData }
+      }
+    }
+    saveProjects(projects)
+    return Promise.resolve()
+  },
 
   logAll(): void {
     console.table(readProjects())
