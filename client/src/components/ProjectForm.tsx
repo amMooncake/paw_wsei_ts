@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, type Dispatch, type SetStateAction } from 'react';
+import { useState, type Dispatch, type SetStateAction } from 'react';
 import { toast } from 'react-toastify';
 
 import { projectApi } from '../api/projectApi';
@@ -15,7 +15,7 @@ export default function ProjectForm({ setProjects }: { setProjects: Dispatch<Set
   const [createForm, setCreateForm] = useState<ProjectForm>(emptyForm)
 
 
-  const handleSubmit = useCallback((): void => {
+  async function handleSubmit(): Promise<void> {
     if (createForm.name.trim() === '') {
       toast.error('Nazwa projektu nie może być pusta!', toastErrorStyle);
       return;
@@ -26,24 +26,12 @@ export default function ProjectForm({ setProjects }: { setProjects: Dispatch<Set
       return;
     }
 
-    projectApi.create(createForm)
+    await projectApi.create(createForm)
 
     toast.success('Projekt został dodany.', toastSuccessStyle)
     setCreateForm(emptyForm)
-    setProjects(projectApi.getAll())
-
-  }, [createForm, setProjects]);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-        handleSubmit();
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-
-  }, [handleSubmit]);
+    setProjects(await projectApi.getAll())
+  }
 
   return <>
 
@@ -54,7 +42,7 @@ export default function ProjectForm({ setProjects }: { setProjects: Dispatch<Set
       className='flex flex-col gap-2'
       onSubmit={(event) => {
         event.preventDefault();
-        handleSubmit();
+        void handleSubmit();
       }}
     >
       <Input

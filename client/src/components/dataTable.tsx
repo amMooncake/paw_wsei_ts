@@ -29,10 +29,11 @@ type DataTableProps = {
 
 export default function DataTable({ projects, setProjects, onOpenProject }: DataTableProps) {
     const [editingId, setEditingId] = useState<string | null>(null)
+
     const [editForm, setEditForm] = useState<ProjectForm>(emptyForm)
 
 
-    function handleEdit(): void {
+    async function handleEdit(): Promise<void> {
         if (editForm.name.trim() === '') {
             toast.error('Nazwa projektu nie może być pusta!', toastErrorStyle);
             return;
@@ -49,7 +50,7 @@ export default function DataTable({ projects, setProjects, onOpenProject }: Data
             ...editForm,
         })
         setEditingId(null)
-        setProjects(projectApi.getAll())
+        setProjects(await projectApi.getAll())
         toast.success('Projekt został zaktualizowany.', toastSuccessStyle)
     }
     function handleCanelEdit(): void {
@@ -61,12 +62,13 @@ export default function DataTable({ projects, setProjects, onOpenProject }: Data
         setEditForm({
             name: project.name,
             description: project.description,
+            stories: project.stories,
         })
     }
 
-    function deleteProject(id: string) {
-        projectApi.delete(id)
-        setProjects(projectApi.getAll())
+    async function deleteProject(id: string) {
+        await projectApi.delete(id)
+        setProjects(await projectApi.getAll())
 
         if (editingId === id) {
             setEditingId(null)
@@ -79,7 +81,6 @@ export default function DataTable({ projects, setProjects, onOpenProject }: Data
         <table className={tableStyles.table}>
             <thead>
                 <tr className={tableStyles.headRow}>
-                    <th>id</th>
                     <th>Nazwa</th>
                     <th>Opis</th>
                     <th className={tableStyles.actionsHeaderCell}>Akcje</th>
@@ -88,7 +89,6 @@ export default function DataTable({ projects, setProjects, onOpenProject }: Data
             <tbody>
                 {projects.map((project) => (
                     <tr key={project.id} className={tableStyles.bodyRow}>
-                        <td>{project.id.slice(0, 4)}...</td>
                         <td>{editingId !== project.id ?
                             project.name
                             :

@@ -2,7 +2,7 @@ export type Project = {
   id: string
   name: string
   description: string
-  stories?: Story[]
+  stories: Story[]
 }
 
 export type ProjectForm = Omit<Project, 'id'>
@@ -10,15 +10,31 @@ export type ProjectForm = Omit<Project, 'id'>
 export const emptyForm: ProjectForm = {
   name: '',
   description: '',
+  stories: [],
 }
 
+
+
 export type Story = {
-    id: string // manually incrementing?
-    title: string // user input
-    description: string // user input
-    priority: 'Low' | 'Medium' | 'High' // user choose
-    projectId: string // to link story to a project
-    creationDate: Date // auto-generated when story is created
-    status: 'To Do' | 'In Progress' | 'Done' // everything is To Do first, waits for user to change it
-    ownerId: string // to link story to a user
+  id: string
+  title: string
+  description: string
+  priority: 'Low' | 'Medium' | 'High'
+  projectId: string
+  creationDate: Date
+  status: 'To Do' | 'In Progress' | 'Done'
+  ownerId: string
+}
+export type StoryForm = Omit<Story, 'id' | 'projectId' | 'creationDate'> & {
+  title: string
+  description: string
+}
+
+
+export const emptyStoryForm: StoryForm = {
+  title: '',
+  description: '',
+  priority: 'Low',
+  status: 'To Do',
+  ownerId: '',
 }
