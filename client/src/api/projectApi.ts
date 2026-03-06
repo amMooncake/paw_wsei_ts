@@ -1,4 +1,4 @@
-import type { Project } from '../models/project'
+import type { Project, ProjectForm } from '../models/project'
 
 const STORAGE_KEY = 'projects'
 
@@ -25,7 +25,7 @@ export const projectApi = {
     return project ?? null
   },
 
-  create(data: Omit<Project, 'id'>): Project {
+  create(data: ProjectForm): Project {
     const project: Project = {
       id: crypto.randomUUID(),
       ...data,

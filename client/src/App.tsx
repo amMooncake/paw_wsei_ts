@@ -23,51 +23,47 @@ export default function App() {
 
   const currentPath = window.location.pathname
   const projectId = new URLSearchParams(window.location.search).get('id')
-  console.log('Current path:', currentPath)
-  console.log('Project ID:', projectId)
 
   function handleOpenProject(id: string): void {
     window.location.href = `/project?id=${encodeURIComponent(id)}`
   }
 
-  if (currentPath === '/project') {
-    return (
-      <>
-        <h1 className='absolute top-6 right-8 font-bold text-right'>Welcome, {aleksy.name} {aleksy.lastName}!</h1>
-        <ProjectLocation
-          projectId={projectId}
-          onBack={() => {
-            window.location.href = '/'
-          }}
-        />
-      </>
+  const PageContent = currentPath === '/project' ? (
+    <>
+      <ProjectLocation
+        projectId={projectId}
+        onBack={() => {
+          window.location.href = '/'
+        }}
+      />
+    </>
 
-    )
-  }
+  ) : (
+    <div className="notebook-grid min-h-screen w-full flex flex-col items-center justify-start p-10 gap-10">
+
+      <ToastContainer
+        stacked
+        position='bottom-center'
+        autoClose={2500}
+        theme='light'
+        transition={Slide}
+      />
+
+      <ManageMeLogo />
+
+      <main className='grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-10 w-full max-w-7xl'>
+        <ProjectForm setProjects={setProjects} />
+        <div>
+          <DataTable projects={projects} setProjects={setProjects} onOpenProject={handleOpenProject} />
+        </div>
+      </main>
+    </div>
+  )
 
   return (
     <>
       <h1 className='absolute top-6 right-8 font-bold text-right'>Welcome, {aleksy.name} {aleksy.lastName}!</h1>
-
-      <div className="notebook-grid min-h-screen w-full flex flex-col items-center justify-start p-10 gap-10">
-
-        <ToastContainer
-          stacked
-          position='bottom-center'
-          autoClose={2500}
-          theme='light'
-          transition={Slide}
-        />
-
-        <ManageMeLogo />
-  
-        <main className='grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-10 w-full max-w-7xl'>
-          <ProjectForm setProjects={setProjects} />
-          <div>
-            <DataTable projects={projects} setProjects={setProjects} onOpenProject={handleOpenProject} />
-          </div>
-        </main>
-      </div>
+      {PageContent}
     </>
   )
 }

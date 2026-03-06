@@ -134,7 +134,7 @@ export default function DataTable({ projects, setProjects, onOpenProject }: Data
                                 </NeuButton>
 
                                 <NeuButton
-                                    className="bg-green-300 p-1 text-black"
+                                    className="bg-purple-300 p-1 text-black"
                                     title="viewProject"
                                     aria-label="viewProject"
                                     onClick={() => onOpenProject(project.id)}
