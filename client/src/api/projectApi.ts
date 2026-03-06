@@ -20,6 +20,11 @@ export const projectApi = {
     return readProjects()
   },
 
+  getById(id: string): Project | null {
+    const project = readProjects().find((item) => item.id === id)
+    return project ?? null
+  },
+
   create(data: Omit<Project, 'id'>): Project {
     const project: Project = {
       id: crypto.randomUUID(),

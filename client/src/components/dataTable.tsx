@@ -11,14 +11,23 @@ import { LuPencil } from "react-icons/lu";
 import { LuTrash2 } from "react-icons/lu";
 import { LuCheck } from "react-icons/lu";
 import { LuX } from 'react-icons/lu';
+import { LuSquareArrowOutUpRight } from "react-icons/lu";
+
 import Input from "./ui/NeuInput";
 import NeuButton from "./ui/NeuButtonBlue";
 
 import { toast } from 'react-toastify';
 import { toastErrorStyle, toastSuccessStyle } from './ui/projectFormToastOptions';
+import { tableStyles } from './ui/tableStyles';
 
 
-export default function DataTable({ projects, setProjects }: { projects: Project[], setProjects: Dispatch<SetStateAction<Project[]>> }) {
+type DataTableProps = {
+    projects: Project[]
+    setProjects: Dispatch<SetStateAction<Project[]>>
+    onOpenProject: (id: string) => void
+}
+
+export default function DataTable({ projects, setProjects, onOpenProject }: DataTableProps) {
     const [editingId, setEditingId] = useState<string | null>(null)
     const [editForm, setEditForm] = useState<ProjectForm>(emptyForm)
 
@@ -30,9 +39,9 @@ export default function DataTable({ projects, setProjects }: { projects: Project
         }
 
         if (editForm.description.trim() === '') {
-              toast.error('Opis projektu nie może być pusty!', toastErrorStyle);
-              return;
-            }
+            toast.error('Opis projektu nie może być pusty!', toastErrorStyle);
+            return;
+        }
 
         if (!editingId) return
         projectApi.update({
@@ -66,19 +75,19 @@ export default function DataTable({ projects, setProjects }: { projects: Project
     }
 
 
-    return <div className="max-w-full overflow-x-auto">
-        <table className="w-full table-auto bg-white border-b-4 border-black">
+    return <div className={tableStyles.wrapper}>
+        <table className={tableStyles.table}>
             <thead>
-                <tr className="bg-yellow-300 [&>*]:p-2 [&>*]:border-2 [&>*]:border-zinc-900 [&>*]:font-black [&>*]:uppercase [&>*]:tracking-wide">
+                <tr className={tableStyles.headRow}>
                     <th>id</th>
                     <th>Nazwa</th>
                     <th>Opis</th>
-                    <th className="w-px whitespace-nowrap">Akcje</th>
+                    <th className={tableStyles.actionsHeaderCell}>Akcje</th>
                 </tr>
             </thead>
             <tbody>
                 {projects.map((project) => (
-                    <tr key={project.id} className="even:bg-white odd:bg-zinc-200 [&>*]:p-2 [&>*]:border-2 [&>*]:border-black [&>*]:align-middle">
+                    <tr key={project.id} className={tableStyles.bodyRow}>
                         <td>{project.id.slice(0, 4)}...</td>
                         <td>{editingId !== project.id ?
                             project.name
@@ -103,8 +112,8 @@ export default function DataTable({ projects, setProjects }: { projects: Project
                                     onChange={(event) => setEditForm({ ...editForm, description: event.target.value })} />
                                 )}
                         </td>
-                        <td className="w-px whitespace-nowrap">
-                            <div className="inline-flex gap-2">
+                        <td className={tableStyles.actionsCell}>
+                            <div className={tableStyles.actionsContainer}>
                                 {editingId === project.id ?
                                     <div className='flex flex-row gap-2'>
                                         <NeuButton className="bg-green-400 p-1 text-black" onClick={() => handleEdit()}>
@@ -115,15 +124,23 @@ export default function DataTable({ projects, setProjects }: { projects: Project
                                         </NeuButton>
                                     </div>
                                     :
-                                    <NeuButton className="!bg-blue-300 p-1 text-black" onClick={() => startEdit(project)} title="Edytuj" aria-label="Edytuj">
+                                    <NeuButton className="!bg-blue-300 p-1 text-black" onClick={() => startEdit(project)} title="Edit" aria-label="Edit">
                                         <LuPencil className="w-6 h-6 text-black" />
                                     </NeuButton>
                                 }
 
-                                <NeuButton className="bg-orange-300 p-1 text-black" title="Usuń" aria-label="Usuń" onClick={() => deleteProject(project.id)}>
+                                <NeuButton className="bg-orange-300 p-1 text-black" title="delete" aria-label="delete" onClick={() => deleteProject(project.id)}>
                                     <LuTrash2 className="w-6 h-6 text-black" />
                                 </NeuButton>
 
+                                <NeuButton
+                                    className="bg-green-300 p-1 text-black"
+                                    title="viewProject"
+                                    aria-label="viewProject"
+                                    onClick={() => onOpenProject(project.id)}
+                                >
+                                    <LuSquareArrowOutUpRight className="w-6 h-6 text-black" />
+                                </NeuButton>
                             </div>
                         </td>
                     </tr>
