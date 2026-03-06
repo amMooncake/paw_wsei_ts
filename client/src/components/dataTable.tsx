@@ -14,6 +14,9 @@ import { LuX } from 'react-icons/lu';
 import Input from "./ui/NeuInput";
 import NeuButton from "./ui/NeuButtonBlue";
 
+import { toast } from 'react-toastify';
+import { toastErrorStyle, toastSuccessStyle } from './ui/projectFormToastOptions';
+
 
 export default function DataTable({ projects, setProjects }: { projects: Project[], setProjects: Dispatch<SetStateAction<Project[]>> }) {
     const [editingId, setEditingId] = useState<string | null>(null)
@@ -21,6 +24,16 @@ export default function DataTable({ projects, setProjects }: { projects: Project
 
 
     function handleEdit(): void {
+        if (editForm.name.trim() === '') {
+            toast.error('Nazwa projektu nie może być pusta!', toastErrorStyle);
+            return;
+        }
+
+        if (editForm.description.trim() === '') {
+              toast.error('Opis projektu nie może być pusty!', toastErrorStyle);
+              return;
+            }
+
         if (!editingId) return
         projectApi.update({
             id: editingId,
@@ -28,6 +41,7 @@ export default function DataTable({ projects, setProjects }: { projects: Project
         })
         setEditingId(null)
         setProjects(projectApi.getAll())
+        toast.success('Projekt został zaktualizowany.', toastSuccessStyle)
     }
     function handleCanelEdit(): void {
         setEditingId(null)

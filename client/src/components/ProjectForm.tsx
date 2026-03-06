@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, type Dispatch, type SetStateAction } from 'react';
 import { toast } from 'react-toastify';
-import { LuX } from "react-icons/lu";
 
 import { projectApi } from '../api/projectApi';
+import { toastErrorStyle, toastSuccessStyle } from './ui/projectFormToastOptions';
 
 import type { Project, ProjectForm } from '../models/project'
 import { emptyForm } from "../models/project";
@@ -17,43 +17,18 @@ export default function ProjectForm({ setProjects }: { setProjects: Dispatch<Set
 
   const handleSubmit = useCallback((): void => {
     if (createForm.name.trim() === '') {
-      // toast.error('Nazwa projektu nie może być pusta!')
-      toast.error('Nazwa projektu nie może być pusta!', {
-        position: "bottom-center",
-        hideProgressBar: true,
-        progress: undefined,
-        theme: "light",
-        className: 'border-2 border-b-4 border-red-500 !text-red-500 font-bold text-md',
-        icon: false,
-        closeButton: ({ closeToast }) => <LuX className='absolute top-1 right-1 w-5 h-5 cursor-pointer hover:scale-110 transition-transform' onClick={closeToast} />
-      });
+      toast.error('Nazwa projektu nie może być pusta!', toastErrorStyle);
       return;
     }
 
     if (createForm.description.trim() === '') {
-      toast.error('Opis projektu nie może być pusty!', {
-        position: "bottom-center",
-        hideProgressBar: true,
-        progress: undefined,
-        theme: "light",
-        className: 'border-2 border-b-4 border-red-500 !text-red-500 font-bold text-md',
-        icon: false,
-        closeButton: ({ closeToast }) => <LuX className='absolute top-1 right-1 w-5 h-5 cursor-pointer hover:scale-110 transition-transform' onClick={closeToast} />
-      });
+      toast.error('Opis projektu nie może być pusty!', toastErrorStyle);
       return;
     }
 
     projectApi.create(createForm)
 
-    toast.success('Projekt został dodany.', {
-        position: "bottom-center",
-        hideProgressBar: true,
-        progress: undefined,
-        theme: "light",
-        className: 'border-2 border-b-4 border-green-500 !text-green-500 font-bold text-md',
-        icon: false,
-        closeButton: ({ closeToast }) => <LuX className='absolute top-1 right-1 w-5 h-5 cursor-pointer hover:scale-110 transition-transform' onClick={closeToast} />
-      })
+    toast.success('Projekt został dodany.', toastSuccessStyle)
     setCreateForm(emptyForm)
     setProjects(projectApi.getAll())
 
