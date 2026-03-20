@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 
 import { projectApi } from '../api/projectApi'
-import { emptyStoryForm, type Project, type StoryForm, type Story } from '../models/project'
+import { type Project } from '../models/project'
+import { emptyStoryForm, type StoryForm, type Story } from '../models/story'
 import { tableStyles } from './ui/tableStyles'
+import Taskboard from './Taskboard'
 
-import { LuPencil, LuCheck, LuX, LuArrowDown, LuArrowUp, LuTrash2 } from "react-icons/lu";
+import { LuPencil, LuCheck, LuX, LuArrowDown, LuArrowUp, LuTrash2, LuListTodo } from "react-icons/lu";
 
 
 import NeuButton from './ui/NeuButtonBlue'
@@ -24,6 +26,7 @@ export default function ProjectStories({ project, onBack, userId }: ProjectStori
     const [createForm, setCreateForm] = useState<StoryForm>({ ...emptyStoryForm, ownerId: userId })
     const [stories, setStories] = useState<Story[]>([])
     const [editingId, setEditingId] = useState<string | null>(null)
+    const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null)
     const [editForm, setEditForm] = useState<Pick<Story, 'title' | 'description' | 'priority'>>({
         title: '',
         description: '',
@@ -62,7 +65,7 @@ export default function ProjectStories({ project, onBack, userId }: ProjectStori
 
 
     async function handleDeleteStory(storyId: string) {
-        await projectApi.removeStory(projectId, storyId)
+        await projectApi.removeStory(storyId)
         if (editingId === storyId) {
             setEditingId(null)
             setEditForm({ title: '', description: '', priority: 'Low' })
@@ -94,6 +97,21 @@ export default function ProjectStories({ project, onBack, userId }: ProjectStori
         const updatedStories = await projectApi.getStories(projectId)
         setStories(updatedStories)
         handleCancelEdit()
+    }
+
+    function handleShowTasks(storyId: string) {
+        setSelectedStoryId(storyId)
+    }
+
+    if (selectedStoryId) {
+        return (
+            <div className="notebook-grid min-h-screen w-full flex justify-center px-10 pt-20">
+                <section className="w-full max-w-5xl flex flex-col items-center gap-5">
+                    <NeuButton onClick={() => setSelectedStoryId(null)}>Back to Stories</NeuButton>
+                    <Taskboard storyId={selectedStoryId} />
+                </section>
+            </div>
+        )
     }
 
     function renderStoryRow(story: Story) {
@@ -153,6 +171,7 @@ export default function ProjectStories({ project, onBack, userId }: ProjectStori
                     onStartEdit={startEdit}
                     onSaveEdit={handleSaveEdit}
                     onCancelEdit={handleCancelEdit}
+                    onShowTasks={handleShowTasks}
                 />
             </tr>
         )
@@ -163,7 +182,7 @@ export default function ProjectStories({ project, onBack, userId }: ProjectStori
             <section className="w-full max-w-5xl flex flex-col items-center gap-5">
                 <div className="relative w-full flex items-center justify-center">
                     <h1 className="text-2xl font-black uppercase tracking-wide">Info Projektu</h1>
-                    <NeuButton className="absolute right-0 bg-blue-300" onClick={onBack}>
+                    <NeuButton className="absolute right-0 !bg-blue-300" onClick={onBack}>
                         <p className="text-black">Wróć</p>
                     </NeuButton>
                 </div>
@@ -227,6 +246,7 @@ function StoryActionsCell({
     onStartEdit,
     onSaveEdit,
     onCancelEdit,
+    onShowTasks,
 }: {
     story: Story
     isEditing: boolean
@@ -236,6 +256,7 @@ function StoryActionsCell({
     onStartEdit: (story: Story) => void
     onSaveEdit: () => Promise<void>
     onCancelEdit: () => void
+    onShowTasks: (storyId: string) => void
 }) {
     const storyId = story.id
 
@@ -248,7 +269,7 @@ function StoryActionsCell({
                 <NeuButton className="!bg-emerald-200 p-1 text-black" onClick={() => { void onHigherStatus(storyId) }} title="Move up" aria-label="Move up">
                     <LuArrowUp className="w-6 h-6 text-black" />
                 </NeuButton>
-                <NeuButton className="bg-orange-300 p-1 text-black" title="Delete" aria-label="Delete" onClick={() => { void onRemove(storyId) }}>
+                <NeuButton className="!bg-orange-300 p-1 text-black" title="Delete" aria-label="Delete" onClick={() => { void onRemove(storyId) }}>
                     <LuTrash2 className="w-6 h-6 text-black" />
                 </NeuButton>
 
@@ -267,6 +288,9 @@ function StoryActionsCell({
                     </NeuButton>
                 }
 
+                <NeuButton className="!bg-purple-300 p-1 text-black" onClick={() => onShowTasks(storyId)} title="Show Tasks" aria-label="Show Tasks">
+                    <LuListTodo className="w-6 h-6 text-black" />
+                </NeuButton>
             </div>
         </td>
     )
