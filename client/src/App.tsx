@@ -27,7 +27,9 @@ export default function App() {
   const [projects, setProjects] = useState<Project[]>([])
   const [currentUser, setCurrentUser] = useState<MyUser | null>(null)
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    return localStorage.getItem('theme') === 'dark'
+    const saved = localStorage.getItem('theme')
+    if (saved) return saved === 'dark'
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
   })
 
   useEffect(() => {
@@ -36,6 +38,16 @@ export default function App() {
       setCurrentUser(await userApi.getCurrentUser())
     }
     void loadData()
+  }, [])
+
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    const handleChange = (e: MediaQueryListEvent) => {
+      setIsDarkMode(e.matches)
+    }
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
   }, [])
 
   useEffect(() => {
