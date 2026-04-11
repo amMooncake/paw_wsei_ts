@@ -2,7 +2,7 @@ export type Story = {
   id: string
   title: string
   description: string
-  priority: 'Low' | 'Medium' | 'High'
+  priority: 'low' | 'medium' | 'high'
   projectId: string
   creationDate: Date
   status: 'To Do' | 'In Progress' | 'Done'
@@ -17,7 +17,7 @@ export type StoryForm = Omit<Story, 'id' | 'projectId' | 'creationDate'> & {
 export const emptyStoryForm: StoryForm = {
   title: '',
   description: '',
-  priority: 'Low',
+  priority: 'low',
   status: 'To Do',
   ownerId: '',
 }

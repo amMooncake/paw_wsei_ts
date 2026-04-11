@@ -7,7 +7,7 @@ import type { Project, ProjectForm } from "../models/project";
 import { emptyForm } from "../models/project";
 
 
-import {LuPencil, LuTrash2, LuCheck, LuX, LuSquareArrowOutUpRight } from 'react-icons/lu';
+import { LuPencil, LuTrash2, LuCheck, LuX, LuSquareArrowOutUpRight } from 'react-icons/lu';
 
 import Input from "./ui/NeuInput";
 import NeuButton from "./ui/NeuButtonBlue";
@@ -58,7 +58,6 @@ export default function DataTable({ projects, setProjects, onOpenProject }: Data
         setEditForm({
             name: project.name,
             description: project.description,
-            stories: project.stories,
         })
     }
 
@@ -112,10 +111,10 @@ export default function DataTable({ projects, setProjects, onOpenProject }: Data
                             <div className={tableStyles.actionsContainer}>
                                 {editingId === project.id ?
                                     <div className='flex flex-row gap-2'>
-                                        <NeuButton className="bg-green-400 p-1 text-black" onClick={() => handleEdit()}>
+                                        <NeuButton className="!bg-green-400 p-1 text-black" onClick={() => handleEdit()}>
                                             <LuCheck className="w-6 h-6 text-black" />
                                         </NeuButton>
-                                        <NeuButton className="bg-red-400 p-1 text-black" onClick={() => handleCanelEdit()}>
+                                        <NeuButton className="!bg-red-400 p-1 text-black" onClick={() => handleCanelEdit()}>
                                             <LuX className="w-6 h-6 text-black" />
                                         </NeuButton>
                                     </div>
@@ -125,12 +124,12 @@ export default function DataTable({ projects, setProjects, onOpenProject }: Data
                                     </NeuButton>
                                 }
 
-                                <NeuButton className="bg-orange-300 p-1 text-black" title="delete" aria-label="delete" onClick={() => deleteProject(project.id)}>
+                                <NeuButton className="!bg-orange-300 p-1 text-black" title="delete" aria-label="delete" onClick={() => deleteProject(project.id)}>
                                     <LuTrash2 className="w-6 h-6 text-black" />
                                 </NeuButton>
 
                                 <NeuButton
-                                    className="bg-purple-300 p-1 text-black"
+                                    className="!bg-purple-300 p-1 text-black"
                                     title="viewProject"
                                     aria-label="viewProject"
                                     onClick={() => onOpenProject(project.id)}

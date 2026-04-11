@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { projectApi } from '../api/projectApi'
+import { storyApi } from '../api/storyApi'
 import { type Project } from '../models/project'
 import { emptyStoryForm, type StoryForm, type Story } from '../models/story'
 import { tableStyles } from './ui/tableStyles'
@@ -30,14 +30,14 @@ export default function ProjectStories({ project, onBack, userId }: ProjectStori
     const [editForm, setEditForm] = useState<Pick<Story, 'title' | 'description' | 'priority'>>({
         title: '',
         description: '',
-        priority: 'Low',
+        priority: 'low',
     })
     const projectId = project.id
 
 
     useEffect(() => {
         async function loadStories() {
-            const loadedStories = await projectApi.getStories(projectId)
+            const loadedStories = await storyApi.getByProjectId(projectId)
             setStories(loadedStories)
         }
         void loadStories()
@@ -45,32 +45,32 @@ export default function ProjectStories({ project, onBack, userId }: ProjectStori
     }, [projectId])
 
     async function handleSubmit() {
-        await projectApi.createStory(projectId, createForm)
+        await storyApi.create(projectId, createForm)
         setCreateForm({ ...emptyStoryForm, ownerId: userId })
-        const updatedStories = await projectApi.getStories(projectId)
+        const updatedStories = await storyApi.getByProjectId(projectId)
         setStories(updatedStories)
     }
 
     async function handleLowerStatus(storyId: string) {
-        await projectApi.lowerStatusStory(projectId, storyId)
-        const updatedStories = await projectApi.getStories(projectId)
+        await storyApi.changeStatus(projectId, storyId, 'down')
+        const updatedStories = await storyApi.getByProjectId(projectId)
         setStories(updatedStories)
     }
 
     async function handleHigherStatus(storyId: string) {
-        await projectApi.higherStatusStory(projectId, storyId)
-        const updatedStories = await projectApi.getStories(projectId)
+        await storyApi.changeStatus(projectId, storyId, 'up')
+        const updatedStories = await storyApi.getByProjectId(projectId)
         setStories(updatedStories)
     }
 
 
     async function handleDeleteStory(storyId: string) {
-        await projectApi.removeStory(storyId)
+        await storyApi.delete(storyId)
         if (editingId === storyId) {
             setEditingId(null)
-            setEditForm({ title: '', description: '', priority: 'Low' })
+            setEditForm({ title: '', description: '', priority: 'low' })
         }
-        const updatedStories = await projectApi.getStories(projectId)
+        const updatedStories = await storyApi.getByProjectId(projectId)
         setStories(updatedStories)
     }
 
@@ -85,7 +85,7 @@ export default function ProjectStories({ project, onBack, userId }: ProjectStori
 
     function handleCancelEdit() {
         setEditingId(null)
-        setEditForm({ title: '', description: '', priority: 'Low' })
+        setEditForm({ title: '', description: '', priority: 'low' })
     }
 
     async function handleSaveEdit() {
@@ -93,8 +93,8 @@ export default function ProjectStories({ project, onBack, userId }: ProjectStori
             return
         }
 
-        await projectApi.editStory(projectId, editingId, editForm)
-        const updatedStories = await projectApi.getStories(projectId)
+        await storyApi.update(projectId, editingId, editForm)
+        const updatedStories = await storyApi.getByProjectId(projectId)
         setStories(updatedStories)
         handleCancelEdit()
     }
@@ -107,7 +107,7 @@ export default function ProjectStories({ project, onBack, userId }: ProjectStori
         return (
             <div className="notebook-grid min-h-screen w-full flex justify-center px-10 pt-20">
                 <section className="w-full max-w-5xl flex flex-col items-center gap-5">
-                    <NeuButton onClick={() => setSelectedStoryId(null)}>Back to Stories</NeuButton>
+                    <NeuButton onClick={() => setSelectedStoryId(null)}>Wróć do historii</NeuButton>
                     <Taskboard storyId={selectedStoryId} />
                 </section>
             </div>
@@ -154,12 +154,16 @@ export default function ProjectStories({ project, onBack, userId }: ProjectStori
                             value={editForm.priority}
                             onChange={(event) => setEditForm({ ...editForm, priority: event.target.value as Story['priority'] })}
                         >
-                            <option value="Low">Low</option>
-                            <option value="Medium">Medium</option>
-                            <option value="High">High</option>
+                            <option value="low">niski</option>
+                            <option value="medium">średni</option>
+                            <option value="high">wysoki</option>
                         </select>
                     ) : (
-                        story.priority
+                        {
+                            'low': 'niski',
+                            'medium': 'średni',
+                            'high': 'wysoki'
+                        }[story.priority.toLowerCase() as 'low' | 'medium' | 'high'] || story.priority
                     )}
                 </td>
                 <StoryActionsCell
@@ -306,8 +310,8 @@ function StoryTable({ children, header, headerClassName }: { children: React.Rea
                         <th>Nazwa</th>
                         <th>Opis</th>
                         <th>Data</th>
-                        <th>priority</th>
-                        <th>Actions</th>
+                        <th>Priorytet</th>
+                        <th>Akcje</th>
                     </tr>
                 </thead>
                 <tbody>

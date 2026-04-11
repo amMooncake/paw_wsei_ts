@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { projectApi } from '../api/projectApi'
+import { taskApi } from '../api/taskApi'
 import { type Task, type TaskForm, emptyTaskForm } from '../models/task'
 import { userApi } from '../api/userApi'
 import type { AssignableUser } from '../models/user'
@@ -21,7 +21,7 @@ export default function Taskboard({ storyId }: TaskboardProps) {
 
     useEffect(() => {
         async function loadData() {
-            const loadedTasks = await projectApi.getTasks(storyId)
+            const loadedTasks = await taskApi.getByStoryId(storyId)
             setTasks(loadedTasks)
             const users = await userApi.getAssignableUsers()
             setAssignableUsers(users)
@@ -31,36 +31,36 @@ export default function Taskboard({ storyId }: TaskboardProps) {
 
     async function handleAssignUser(taskId: string, userId: string) {
         if (!userId) return
-        await projectApi.assignUserToTask(taskId, userId)
-        const updatedTasks = await projectApi.getTasks(storyId)
+        await taskApi.assignUser(taskId, userId)
+        const updatedTasks = await taskApi.getByStoryId(storyId)
         setTasks(updatedTasks)
     }
 
     async function handleCreateTask() {
-        await projectApi.createTask(storyId, createForm)
+        await taskApi.create(storyId, createForm)
         setCreateForm({ ...emptyTaskForm, storyId })
-        const updatedTasks = await projectApi.getTasks(storyId)
+        const updatedTasks = await taskApi.getByStoryId(storyId)
         setTasks(updatedTasks)
     }
 
     async function handleCompleteTask(taskId: string) {
         const hours = workedHours[taskId] ?? 0
-        await projectApi.completeTask(taskId, hours)
-        const updatedTasks = await projectApi.getTasks(storyId)
+        await taskApi.complete(taskId, hours)
+        const updatedTasks = await taskApi.getByStoryId(storyId)
         setTasks(updatedTasks)
     }
 
     async function handleDeleteTask(taskId: string) {
-        await projectApi.deleteTask(taskId)
-        const updatedTasks = await projectApi.getTasks(storyId)
+        await taskApi.delete(taskId)
+        const updatedTasks = await taskApi.getByStoryId(storyId)
         setTasks(updatedTasks)
     }
 
     async function handleUpdateTask() {
         if (!editingTask) return
-        await projectApi.updateTask(editingTask.id, editingTask)
+        await taskApi.update(editingTask.id, editingTask)
         setEditingTask(null)
-        const updatedTasks = await projectApi.getTasks(storyId)
+        const updatedTasks = await taskApi.getByStoryId(storyId)
         setTasks(updatedTasks)
     }
 
@@ -75,12 +75,12 @@ export default function Taskboard({ storyId }: TaskboardProps) {
                     </div>
                 </div>
                 <p>{task.description}</p>
-                <p>Priority: {task.priority}</p>
-                <p>Estimated Time: {task.estimatedTime}h</p>
+                <p>Priorytet: {task.priority === 'low' ? 'niski' : task.priority === 'medium' ? 'średni' : 'wysoki'}</p>
+                <p>Szacowany czas: {task.estimatedTime}h</p>
 
                 {task.status === 'todo' && (
-                     <div>
-                        Assign to:
+                    <div>
+                        Przypisz do:
                         <select className="border-2 border-black rounded px-2 py-1 bg-white" onChange={(e) => handleAssignUser(task.id, e.target.value)}>
                             <option value="">Select user</option>
                             {assignableUsers.map(user => (
@@ -92,12 +92,12 @@ export default function Taskboard({ storyId }: TaskboardProps) {
 
                 {task.status === 'doing' && (
                     <>
-                        <p>Assignee: {task.assignee.name}</p>
-                        <p>Started At: {task.startedAt.toLocaleDateString()}</p>
+                        <p>Przypisane do: {task.assignee.name}</p>
+                        <p>Zaczęto: {task.startedAt.toLocaleDateString()}</p>
                         <div className='flex gap-2 items-center'>
                             <Input
                                 type="number"
-                                placeholder="Worked Hours"
+                                placeholder="Przepracowane godziny"
                                 value={workedHours[task.id] ?? ''}
                                 onChange={e => setWorkedHours({ ...workedHours, [task.id]: Number(e.target.value) })}
                             />
@@ -107,10 +107,10 @@ export default function Taskboard({ storyId }: TaskboardProps) {
                 )}
 
                 {task.status === 'done' && (
-                     <>
-                        <p>Assignee: {task.assignee.name}</p>
-                        <p>Finished At: {task.finishedAt.toLocaleDateString()}</p>
-                        <p>Worked Hours: {task.workedHours}h</p>
+                    <>
+                        <p>Przypisane do: {task.assignee.name}</p>
+                        <p>Zakończono: {task.finishedAt.toLocaleDateString()}</p>
+                        <p>Przepracowane godziny: {task.workedHours}h</p>
                     </>
                 )}
             </div>
@@ -125,38 +125,38 @@ export default function Taskboard({ storyId }: TaskboardProps) {
     if (editingTask) {
         return (
             <div className="w-full">
-                <h3 className="text-lg font-bold">Edit Task</h3>
-                <form className='flex flex-col gap-2 my-4' onSubmit={e => { e.preventDefault(); handleUpdateTask()}}>
-                <Input
-                    type="text"
-                    placeholder="Title"
-                    value={editingTask.title}
-                    onChange={e => setEditingTask({ ...editingTask, title: e.target.value })}
-                />
-                <TextArea
-                    placeholder="Description"
-                    value={editingTask.description}
-                    onChange={e => setEditingTask({ ...editingTask, description: e.target.value })}
-                />
-                 <select
-                    className="border-2 border-black rounded px-2 py-1 bg-white"
-                    value={editingTask.priority}
-                    onChange={e => setEditingTask({ ...editingTask, priority: e.target.value as Task['priority'] })}
-                >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                </select>
-                <Input
-                    type="number"
-                    placeholder="Estimated Time (h)"
-                    value={editingTask.estimatedTime}
-                    onChange={e => setEditingTask({ ...editingTask, estimatedTime: Number(e.target.value) })}
-                />
-                <div className='flex gap-2'>
-                    <NeuButton type="submit">Save</NeuButton>
-                    <NeuButton onClick={() => setEditingTask(null)}>Cancel</NeuButton>
-                </div>
+                <h3 className="text-lg font-bold">Edytuj zadanie</h3>
+                <form className='flex flex-col gap-2 my-4' onSubmit={e => { e.preventDefault(); handleUpdateTask() }}>
+                    <Input
+                        type="text"
+                        placeholder="Tytuł"
+                        value={editingTask.title}
+                        onChange={e => setEditingTask({ ...editingTask, title: e.target.value })}
+                    />
+                    <TextArea
+                        placeholder="Opis"
+                        value={editingTask.description}
+                        onChange={e => setEditingTask({ ...editingTask, description: e.target.value })}
+                    />
+                    <select
+                        className="border-2 border-black rounded px-2 py-1 bg-white"
+                        value={editingTask.priority}
+                        onChange={e => setEditingTask({ ...editingTask, priority: e.target.value as Task['priority'] })}
+                    >
+                        <option value="low">Niski</option>
+                        <option value="medium">Średni</option>
+                        <option value="high">Wysoki</option>
+                    </select>
+                    <Input
+                        type="number"
+                        placeholder="Szacowany czas (h)"
+                        value={editingTask.estimatedTime}
+                        onChange={e => setEditingTask({ ...editingTask, estimatedTime: Number(e.target.value) })}
+                    />
+                    <div className='flex gap-2'>
+                        <NeuButton type="submit">Zapisz</NeuButton>
+                        <NeuButton onClick={() => setEditingTask(null)}>Anuluj</NeuButton>
+                    </div>
                 </form>
             </div>
         )
@@ -171,15 +171,15 @@ export default function Taskboard({ storyId }: TaskboardProps) {
                     await handleCreateTask()
                 }}
             >
-                <h3 className="text-lg font-bold">Create New Task</h3>
+                <h3 className="text-lg font-bold">Nowe zadanie</h3>
                 <Input
                     type="text"
-                    placeholder="Title"
+                    placeholder="Tytuł"
                     value={createForm.title}
                     onChange={e => setCreateForm({ ...createForm, title: e.target.value })}
                 />
                 <TextArea
-                    placeholder="Description"
+                    placeholder="Opis"
                     value={createForm.description}
                     onChange={e => setCreateForm({ ...createForm, description: e.target.value })}
                 />
@@ -188,9 +188,9 @@ export default function Taskboard({ storyId }: TaskboardProps) {
                     value={createForm.priority}
                     onChange={e => setCreateForm({ ...createForm, priority: e.target.value as TaskForm['priority'] })}
                 >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
+                    <option value="low">Niski</option>
+                    <option value="medium">Średni</option>
+                    <option value="high">Wysoki</option>
                 </select>
                 <Input
                     type="number"
@@ -198,20 +198,20 @@ export default function Taskboard({ storyId }: TaskboardProps) {
                     value={createForm.estimatedTime}
                     onChange={e => setCreateForm({ ...createForm, estimatedTime: Number(e.target.value) })}
                 />
-                <NeuButton type="submit">Create Task</NeuButton>
+                <NeuButton type="submit">Utwórz zadanie</NeuButton>
             </form>
 
             <div className="grid grid-cols-3 gap-4">
                 <div className="border-2 border-black p-4">
-                    <h2 className="text-lg font-bold">Todo</h2>
+                    <h2 className="text-lg font-bold">Do zrobienia</h2>
                     {todoTasks.map(renderTaskCard)}
                 </div>
                 <div className="border-2 border-black p-4">
-                    <h2 className="text-lg font-bold">Doing</h2>
+                    <h2 className="text-lg font-bold">W trakcie</h2>
                     {doingTasks.map(renderTaskCard)}
                 </div>
                 <div className="border-2 border-black p-4">
-                    <h2 className="text-lg font-bold">Done</h2>
+                    <h2 className="text-lg font-bold">Zrobione</h2>
                     {doneTasks.map(renderTaskCard)}
                 </div>
             </div>
