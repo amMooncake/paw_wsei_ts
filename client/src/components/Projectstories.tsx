@@ -20,7 +20,7 @@ type ProjectStoriesProps = {
     userId: string
 }
 
-const heading2Style = "text-1xl font-black uppercase tracking-wide" as const
+const heading2Style = "text-1xl font-black uppercase tracking-wide dark:text-white" as const
 
 export default function ProjectStories({ project, onBack, userId }: ProjectStoriesProps) {
     const [createForm, setCreateForm] = useState<StoryForm>({ ...emptyStoryForm, ownerId: userId })
@@ -185,9 +185,9 @@ export default function ProjectStories({ project, onBack, userId }: ProjectStori
         <div className="notebook-grid min-h-screen w-full flex justify-center px-10 pt-20">
             <section className="w-full max-w-5xl flex flex-col items-center gap-5">
                 <div className="relative w-full flex items-center justify-center">
-                    <h1 className="text-2xl font-black uppercase tracking-wide">Info Projektu</h1>
-                    <NeuButton className="absolute right-0 !bg-blue-300" onClick={onBack}>
-                        <p className="text-black">Wróć</p>
+                    <h1 className="text-2xl font-black uppercase tracking-wide dark:text-white transition-colors">Info Projektu</h1>
+                    <NeuButton className="absolute right-0 !bg-blue-300 dark:!bg-blue-600" onClick={onBack}>
+                        <p className="text-black dark:text-white">Wróć</p>
                     </NeuButton>
                 </div>
 
@@ -221,16 +221,16 @@ export default function ProjectStories({ project, onBack, userId }: ProjectStori
                         </NeuButton>
                     </form>
                     <div className="flex flex-col w-full text-left gap-5">
-                        <StoryTable header="Kiedyś się tym zajme" headerClassName="!bg-yellow-300" >
+                        <StoryTable header="Kiedyś się tym zajme" headerClassName="!bg-yellow-300 dark:!bg-yellow-600" >
                             {stories.filter((story) => story.status === 'To Do').map((story) => renderStoryRow(story))}
 
                         </StoryTable>
 
-                        <StoryTable header="Robię" headerClassName="!bg-blue-300" >
+                        <StoryTable header="Robię" headerClassName="!bg-blue-300 dark:!bg-blue-600" >
                             {stories.filter((story) => story.status === 'In Progress').map((story) => renderStoryRow(story))}
                         </StoryTable>
 
-                        <StoryTable header="Zrobione" headerClassName="!bg-green-300" >
+                        <StoryTable header="Zrobione" headerClassName="!bg-green-300 dark:!bg-green-600" >
                             {stories.filter((story) => story.status === 'Done').map((story) => renderStoryRow(story))}
                         </StoryTable>
 
@@ -334,8 +334,8 @@ function ProjectInfo({ project }: { project: Project }) {
 }
 
 function Box({ description, boxName }: { description: string; boxName: string }) {
-    return <div className="border-2 border-black p-3 bg-white">
-        <p className="text-xs uppercase font-bold">{boxName}</p>
-        <p className="font-mono break-all">{description}</p>
+    return <div className="border-2 border-black dark:border-zinc-500 p-3 bg-white dark:bg-zinc-900 transition-colors">
+        <p className="text-xs uppercase font-bold dark:text-zinc-400">{boxName}</p>
+        <p className="font-mono break-all dark:text-zinc-100">{description}</p>
     </div>
 }

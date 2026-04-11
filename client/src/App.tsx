@@ -10,6 +10,7 @@ import ProjectStories from './components/Projectstories'
 
 import type { Project } from './models/project'
 import type { MyUser } from './models/user'
+import NeuButton from './components/ui/NeuButtonBlue'
 
 
 // for dev
@@ -25,24 +26,37 @@ window.projectApi = projectApi
 export default function App() {
   const [projects, setProjects] = useState<Project[]>([])
   const [currentUser, setCurrentUser] = useState<MyUser | null>(null)
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return localStorage.getItem('theme') === 'dark'
+  })
 
   useEffect(() => {
-    async function loadProjects() {
+    async function loadData() {
       setProjects(await projectApi.getAll())
       setCurrentUser(await userApi.getCurrentUser())
     }
-    void loadProjects()
-
+    void loadData()
   }, [])
 
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+    }
+  }, [isDarkMode])
 
-  const currentPath = window.location.pathname
-  const projectId = new URLSearchParams(window.location.search).get('id')
-  const selectedProject = projects.find((p) => p.id === projectId) || projects[0]
+  const toggleTheme = () => setIsDarkMode(!isDarkMode)
 
   function handleOpenProject(id: string): void {
     window.location.href = `/project?id=${encodeURIComponent(id)}`
   }
+
+  const currentPath = window.location.pathname
+  const projectId = new URLSearchParams(window.location.search).get('id')
+  const selectedProject = projects.find((p) => p.id === projectId) || projects[0]
 
   const PageContent = currentPath === '/project' ? (
     <>
@@ -55,7 +69,7 @@ export default function App() {
           userId={currentUser?.id ?? ''}
         />
       ) : (
-        <div className="notebook-grid min-h-screen w-full flex items-center justify-center">
+        <div className="notebook-grid min-h-screen w-full flex items-center justify-center dark:text-white">
           <p className="font-bold uppercase tracking-wide">Loading project...</p>
         </div>
       )}
@@ -68,7 +82,7 @@ export default function App() {
         stacked
         position='bottom-center'
         autoClose={2500}
-        theme='light'
+        theme={isDarkMode ? 'dark' : 'light'}
         transition={Slide}
       />
 
@@ -84,10 +98,20 @@ export default function App() {
   )
 
   return (
-    <>
-      <h1 className='absolute top-6 right-8 font-bold text-right'>Welcome, {currentUser?.name} {currentUser?.lastName}!</h1>
-      {PageContent}
-    </>
+    <div className={isDarkMode ? 'dark' : ''}>
+      <div className="relative min-h-screen">
+        <div className='absolute top-6 right-8 flex flex-col items-end gap-2'>
+          <h1 className='font-bold text-right dark:text-gray-300'>Welcome, {currentUser?.name} {currentUser?.lastName}!</h1>
+          <NeuButton
+            className="!p-1 text-xs font-black uppercase tracking-tight bg-zinc-800 dark:bg-zinc-200 dark:text-black"
+            onClick={toggleTheme}
+          >
+            {isDarkMode ? 'Light' : 'Dark'}
+          </NeuButton>
+        </div>
+        {PageContent}
+      </div>
+    </div>
   )
 }
 

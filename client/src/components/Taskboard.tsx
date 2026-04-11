@@ -81,8 +81,8 @@ export default function Taskboard({ storyId }: TaskboardProps) {
                     <td><Input value={editingTask.title} onChange={e => setEditingTask({ ...editingTask, title: e.target.value })} /></td>
                     <td><Input value={editingTask.description} onChange={e => setEditingTask({ ...editingTask, description: e.target.value })} /></td>
                     <td>
-                        <select
-                            className="border-2 border-black px-2 py-1 bg-white"
+                        <select 
+                            className="border-2 border-black px-2 py-1 bg-white dark:bg-zinc-800 dark:text-white transition-colors"
                             value={editingTask.priority}
                             onChange={e => setEditingTask({ ...editingTask, priority: e.target.value as any })}
                         >
@@ -94,8 +94,8 @@ export default function Taskboard({ storyId }: TaskboardProps) {
                     <td><Input type="number" value={editingTask.estimatedTime} onChange={e => setEditingTask({ ...editingTask, estimatedTime: Number(e.target.value) })} /></td>
                     <td className={tableStyles.actionsCell}>
                         <div className="flex gap-2">
-                            <NeuButton onClick={handleUpdateTask} className="!bg-green-400 p-1"><LuCheck /></NeuButton>
-                            <NeuButton onClick={() => setEditingTask(null)} className="!bg-red-400 p-1"><LuX /></NeuButton>
+                             <NeuButton onClick={handleUpdateTask} className="!bg-green-400 p-1"><LuCheck /></NeuButton>
+                             <NeuButton onClick={() => setEditingTask(null)} className="!bg-red-400 p-1"><LuX /></NeuButton>
                         </div>
                     </td>
                 </tr>
@@ -110,7 +110,7 @@ export default function Taskboard({ storyId }: TaskboardProps) {
                 <td>{task.estimatedTime}h</td>
                 <td>
                     {task.status === 'todo' && (
-                        <select className="border-2 border-black rounded px-1 py-1 bg-white text-xs" onChange={(e) => handleAssignUser(task.id, e.target.value)}>
+                        <select className="border-2 border-black rounded px-1 py-1 bg-white dark:bg-zinc-800 dark:text-white text-xs transition-colors" onChange={(e) => handleAssignUser(task.id, e.target.value)}>
                             <option value="">Przypisz...</option>
                             {assignableUsers.map(user => (
                                 <option key={user.id} value={user.id}>{user.name}</option>
@@ -119,11 +119,11 @@ export default function Taskboard({ storyId }: TaskboardProps) {
                     )}
                     {task.status === 'doing' && (
                         <div className="flex gap-2 items-center">
-                            <span className="text-xs font-bold text-blue-600 underline whitespace-nowrap">{task.assignee.name}</span>
-                            <Input
-                                type="number"
-                                placeholder="h"
-                                className="!w-12 !p-0.5 !text-center !text-xs"
+                            <span className="text-xs font-bold text-blue-600 dark:text-blue-400 underline whitespace-nowrap">{task.assignee.name}</span>
+                            <Input 
+                                type="number" 
+                                placeholder="h" 
+                                className="!w-12 !p-0.5 !text-center !text-xs" 
                                 value={workedHours[task.id] ?? ''}
                                 onChange={e => setWorkedHours({ ...workedHours, [task.id]: Number(e.target.value) })}
                             />
@@ -131,13 +131,13 @@ export default function Taskboard({ storyId }: TaskboardProps) {
                         </div>
                     )}
                     {task.status === 'done' && (
-                        <span className="text-xs italic text-gray-500">{task.assignee.name} ({task.workedHours}h)</span>
+                        <span className="text-xs italic text-gray-500 dark:text-gray-400">{task.assignee.name} ({task.workedHours}h)</span>
                     )}
                 </td>
                 <td className={tableStyles.actionsCell}>
                     <div className={tableStyles.actionsContainer}>
-                        <NeuButton onClick={() => setEditingTask(task)} className="!p-1 !bg-blue-300"><LuPencil /></NeuButton>
-                        <NeuButton onClick={() => handleDeleteTask(task.id)} className="!p-1 !bg-rose-400"><LuTrash2 /></NeuButton>
+                        <NeuButton onClick={() => setEditingTask(task)} className="!p-1 !bg-blue-300 dark:!bg-blue-600"><LuPencil /></NeuButton>
+                        <NeuButton onClick={() => handleDeleteTask(task.id)} className="!p-1 !bg-rose-400 dark:!bg-rose-600"><LuTrash2 /></NeuButton>
                     </div>
                 </td>
             </tr>
@@ -152,7 +152,7 @@ export default function Taskboard({ storyId }: TaskboardProps) {
         <div className='flex flex-row w-full gap-10 mt-5'>
             {/* Sidebar Form */}
             <div className="flex flex-col gap-4 w-64 shrink-0">
-                <h3 className="text-lg font-black uppercase underline-offset-4 decoration-4">Nowe Zadanie</h3>
+                <h3 className="text-lg font-black uppercase underline-offset-4 decoration-4 dark:text-white transition-colors">Nowe Zadanie</h3>
                 <form
                     className='flex flex-col gap-3'
                     onSubmit={async (event) => {
@@ -173,7 +173,7 @@ export default function Taskboard({ storyId }: TaskboardProps) {
                         onChange={e => setCreateForm({ ...createForm, description: e.target.value })}
                     />
                     <select
-                        className="border-2 border-black px-2 py-2 bg-white font-bold"
+                        className="border-2 border-black dark:border-zinc-400 px-2 py-2 bg-white dark:bg-zinc-800 dark:text-white font-bold transition-colors"
                         value={createForm.priority}
                         onChange={e => setCreateForm({ ...createForm, priority: e.target.value as any })}
                     >
@@ -193,15 +193,15 @@ export default function Taskboard({ storyId }: TaskboardProps) {
 
             {/* Content Tables */}
             <div className="flex flex-col gap-10 grow overflow-hidden">
-                <TaskTable title="DO ZROBIENIA" headerColor="bg-yellow-300">
+                <TaskTable title="DO ZROBIENIA" headerColor="bg-yellow-300 dark:bg-yellow-600">
                     {todoTasks.map(renderTaskRow)}
                 </TaskTable>
 
-                <TaskTable title="ROBIĘ" headerColor="bg-blue-300">
+                <TaskTable title="ROBIĘ" headerColor="bg-blue-300 dark:bg-blue-600">
                     {doingTasks.map(renderTaskRow)}
                 </TaskTable>
 
-                <TaskTable title="ZROBIONE" headerColor="bg-green-300">
+                <TaskTable title="ZROBIONE" headerColor="bg-green-300 dark:bg-green-600">
                     {doneTasks.map(renderTaskRow)}
                 </TaskTable>
             </div>
@@ -214,7 +214,7 @@ function TaskTable({ title, headerColor, children }: { title: string, headerColo
 
     return (
         <div className="flex flex-col gap-2">
-            <h2 className="text-lg font-black uppercase">{title}</h2>
+            <h2 className="text-lg font-black uppercase dark:text-white transition-colors">{title}</h2>
             <div className={tableStyles.wrapper}>
                 <table className={tableStyles.table}>
                     <thead>
@@ -229,7 +229,7 @@ function TaskTable({ title, headerColor, children }: { title: string, headerColo
                     </thead>
                     <tbody>
                         {hasTasks ? children : (
-                            <tr><td colSpan={6} className="text-center p-4 italic text-gray-400">Brak zadań</td></tr>
+                            <tr><td colSpan={6} className="text-center p-4 italic text-gray-400 dark:text-zinc-500">Brak zadań</td></tr>
                         )}
                     </tbody>
                 </table>
