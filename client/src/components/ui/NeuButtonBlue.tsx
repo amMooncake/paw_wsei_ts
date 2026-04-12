@@ -6,7 +6,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export default function NeuButton({ children, className = '', ...props }: ButtonProps) {
   return (
-    <button 
+    <button
       className={`border-2 border-b-4 border-black dark:border-white text-white bg-blue-500 hover:bg-blue-600 p-2 transition active:translate-y-[2px] ${className}`.trim()}
       type="button"
       {...props}

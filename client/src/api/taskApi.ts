@@ -4,6 +4,7 @@ import type { AssignableUser } from '../models/user'
 import { userApi } from './userApi'
 import { storage, STORAGE_KEYS } from './storage'
 import { storyApi } from './storyApi'
+import { notificationApi } from './notificationApi'
 
 export const taskApi = {
   getAll(): Task[] {
@@ -25,7 +26,7 @@ export const taskApi = {
     storage.set(STORAGE_KEYS.TASKS, tasks)
   },
 
-  create(storyId: string, taskData: TaskForm): Promise<void> {
+  async create(storyId: string, taskData: TaskForm): Promise<void> {
     const tasks = this.getAll()
     const newTask: TodoTask = {
       id: crypto.randomUUID(),
@@ -37,7 +38,17 @@ export const taskApi = {
     }
     tasks.push(newTask)
     this.saveAll(tasks)
-    return Promise.resolve()
+
+    // Notify story owner
+    const story = storyApi.getAll().find(s => s.id === storyId)
+    if (story) {
+      await notificationApi.send({
+        title: 'Nowe Zadanie',
+        message: `Nowe zadanie "${taskData.title}" w historyjce: ${story.title}`,
+        priority: 'medium',
+        recipientId: story.ownerId
+      })
+    }
   },
 
   update(taskId: string, updatedData: Partial<Task>): Promise<void> {
@@ -47,10 +58,23 @@ export const taskApi = {
     return Promise.resolve()
   },
 
-  delete(taskId: string): Promise<void> {
-    const tasks = this.getAll().filter(t => t.id !== taskId)
-    this.saveAll(tasks)
-    return Promise.resolve()
+  async delete(taskId: string): Promise<void> {
+    const tasks = this.getAll()
+    const taskToDelete = tasks.find(t => t.id === taskId)
+    const filteredTasks = tasks.filter(t => t.id !== taskId)
+    this.saveAll(filteredTasks)
+
+    if (taskToDelete) {
+      const story = storyApi.getAll().find(s => s.id === taskToDelete.storyId)
+      if (story) {
+        await notificationApi.send({
+          title: 'Zadanie Usunięte',
+          message: `Zadanie "${taskToDelete.title}" zostało usunięte z historyjki: ${story.title}`,
+          priority: 'medium',
+          recipientId: story.ownerId
+        })
+      }
+    }
   },
 
   async assignUser(taskId: string, userId: string): Promise<void> {
@@ -76,9 +100,28 @@ export const taskApi = {
 
     const stories = storyApi.getAll()
     const story = stories.find(s => s.id === updatedTask.storyId)
-    if (story && story.status === 'To Do') {
-      story.status = 'In Progress'
-      storyApi.saveAll(stories)
+
+    // Notify assigned user
+    await notificationApi.send({
+      title: 'Przypisano Zadanie',
+      message: `Zostałeś przypisany do zadania: ${updatedTask.title}`,
+      priority: 'high',
+      recipientId: userId
+    })
+
+    // Notify story owner (status change to doing -> low priority)
+    if (story) {
+      await notificationApi.send({
+        title: 'Zadanie Rozpoczęte',
+        message: `Zadanie "${updatedTask.title}" w historyjce "${story.title}" zmieniło status na: Doing`,
+        priority: 'low',
+        recipientId: story.ownerId
+      })
+
+      if (story.status === 'To Do') {
+        story.status = 'In Progress'
+        storyApi.saveAll(stories)
+      }
     }
   },
 
@@ -101,14 +144,26 @@ export const taskApi = {
     this.saveAll(tasks)
 
     const storyId = updatedTask.storyId
+    const story = storyApi.getAll().find(s => s.id === storyId)
+
+    // Notify story owner (status change to done -> medium priority)
+    if (story) {
+      await notificationApi.send({
+        title: 'Zadanie Zakończone',
+        message: `Zadanie "${updatedTask.title}" w historyjce "${story.title}" zostało ukończone.`,
+        priority: 'medium',
+        recipientId: story.ownerId
+      })
+    }
+
     const storyTasks = tasks.filter(t => t.storyId === storyId)
     const allTasksDone = storyTasks.every(t => t.status === 'done')
 
     if (allTasksDone) {
       const stories = storyApi.getAll()
-      const story = stories.find(s => s.id === storyId)
-      if (story) {
-        story.status = 'Done'
+      const currentStory = stories.find(s => s.id === storyId)
+      if (currentStory) {
+        currentStory.status = 'Done'
         storyApi.saveAll(stories)
       }
     }

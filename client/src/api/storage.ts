@@ -3,6 +3,7 @@ const STORAGE_KEYS = {
   PROJECTS: 'projects',
   STORIES: 'stories',
   TASKS: 'tasks',
+  NOTIFICATIONS: 'notifications',
 } as const;
 
 export const storage = {

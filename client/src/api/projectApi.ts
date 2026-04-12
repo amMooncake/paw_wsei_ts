@@ -3,6 +3,8 @@ import type { Project } from '../models/project'
 import { storage, STORAGE_KEYS } from './storage'
 import { storyApi } from './storyApi'
 import { taskApi } from './taskApi'
+import { userApi } from './userApi'
+import { notificationApi } from './notificationApi'
 
 export const projectApi = {
   async getAll(): Promise<Project[]> {
@@ -16,13 +18,26 @@ export const projectApi = {
 
 
 
-  async create(data: Omit<Project, 'id'>): Promise<void> {
+   async create(data: Omit<Project, 'id'>): Promise<void> {
     const projectsData = storage.get<Project>(STORAGE_KEYS.PROJECTS)
+    const newId = crypto.randomUUID()
     projectsData.push({
-      id: crypto.randomUUID(),
+      id: newId,
       ...data,
     })
     storage.set(STORAGE_KEYS.PROJECTS, projectsData)
+
+    // Notify all admins
+    const users = await userApi.getAll()
+    const admins = users.filter(u => u.role === 'admin')
+    for (const admin of admins) {
+      await notificationApi.send({
+        title: 'Nowy Projekt',
+        message: `Utworzono nowy projekt: ${data.name}`,
+        priority: 'high',
+        recipientId: admin.id
+      })
+    }
   },
 
   async update(project: Project): Promise<void> {
