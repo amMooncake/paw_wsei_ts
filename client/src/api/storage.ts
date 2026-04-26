@@ -4,7 +4,10 @@ const STORAGE_KEYS = {
   STORIES: 'stories',
   TASKS: 'tasks',
   NOTIFICATIONS: 'notifications',
+  USERS: 'users',
+  CURRENT_USER: 'current_user',
 } as const;
+
 
 export const storage = {
   get<T>(key: string): T[] {

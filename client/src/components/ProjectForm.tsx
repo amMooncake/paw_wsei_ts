@@ -28,7 +28,7 @@ export default function ProjectForm({ setProjects }: { setProjects: Dispatch<Set
 
     await projectApi.create(createForm)
 
-    toast.success('Projekt został dodany.', toastSuccessStyle)
+    // toast.success('Projekt został dodany.', toastSuccessStyle)
     setCreateForm(emptyForm)
     setProjects(await projectApi.getAll())
   }

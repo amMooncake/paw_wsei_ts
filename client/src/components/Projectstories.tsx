@@ -182,7 +182,7 @@ export default function ProjectStories({ project, onBack, userId }: ProjectStori
     }
 
     return (
-        <div className="notebook-grid min-h-screen w-full flex justify-center px-10 pt-20">
+        <div className="notebook-grid min-h-screen w-full flex justify-center px-10 pt-32">
             <section className="w-full max-w-5xl flex flex-col items-center gap-5">
                 <div className="relative w-full flex items-center justify-center">
                     <h1 className="text-2xl font-black uppercase tracking-wide dark:text-white transition-colors">Info Projektu</h1>

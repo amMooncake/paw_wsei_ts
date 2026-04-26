@@ -90,7 +90,7 @@ export default function NotificationView({ userId, onBack }: NotificationViewPro
     }
 
     return (
-        <div className="notebook-grid min-h-screen w-full flex flex-col items-center p-10 gap-10">
+        <div className="notebook-grid min-h-screen w-full flex flex-col items-center p-10 gap-10 pt-20">
             <div className="w-full max-w-5xl flex flex-col gap-6 mt-10">
                 <div className="flex justify-between items-center">
                     <h1 className="text-4xl font-black uppercase dark:text-white transition-colors">
