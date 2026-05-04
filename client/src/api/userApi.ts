@@ -2,9 +2,13 @@ import { type MyUser, type AssignableUser } from '../models/user'
 import { storage, STORAGE_KEYS } from './storage'
 import { CONFIG } from '../config'
 import { notificationApi } from './notificationApi'
+import { db } from './db'
 
 export const userApi = {
     async getAll(): Promise<MyUser[]> {
+        if (CONFIG.STORAGE_TYPE === 'database') {
+            return db.get<MyUser>('users')
+        }
         return storage.get<MyUser>(STORAGE_KEYS.USERS)
     },
 
@@ -47,8 +51,12 @@ export const userApi = {
                 isBlocked: false
             } as MyUser
             
-            users.push(user)
-            storage.set(STORAGE_KEYS.USERS, users)
+            if (CONFIG.STORAGE_TYPE === 'database') {
+                await db.create('users', user)
+            } else {
+                users.push(user)
+                storage.set(STORAGE_KEYS.USERS, users)
+            }
 
             // Notify admins about new user
             const admins = users.filter(u => u.role === 'admin')
@@ -71,6 +79,10 @@ export const userApi = {
     },
 
     async updateRole(userId: string, role: MyUser['role']): Promise<void> {
+        if (CONFIG.STORAGE_TYPE === 'database') {
+            await db.update('users', userId, { role })
+            return
+        }
         const users = await this.getAll()
         const index = users.findIndex(u => u.id === userId)
         if (index !== -1) {
@@ -83,7 +95,12 @@ export const userApi = {
         const users = await this.getAll()
         const index = users.findIndex(u => u.id === userId)
         if (index !== -1) {
-            users[index].isBlocked = !users[index].isBlocked
+            const newStatus = !users[index].isBlocked
+            if (CONFIG.STORAGE_TYPE === 'database') {
+                await db.update('users', userId, { isBlocked: newStatus })
+                return
+            }
+            users[index].isBlocked = newStatus
             storage.set(STORAGE_KEYS.USERS, users)
         }
     }

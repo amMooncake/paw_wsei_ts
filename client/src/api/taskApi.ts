@@ -5,9 +5,21 @@ import { userApi } from './userApi'
 import { storage, STORAGE_KEYS } from './storage'
 import { storyApi } from './storyApi'
 import { notificationApi } from './notificationApi'
+import { CONFIG } from '../config'
+import { db } from './db'
 
 export const taskApi = {
-  getAll(): Task[] {
+  async getAll(): Promise<Task[]> {
+    if (CONFIG.STORAGE_TYPE === 'database') {
+      const tasks = await db.get<Task>('tasks')
+      return tasks.map(task => ({
+        ...task,
+        createdAt: new Date(task.createdAt),
+        ...(task.startedAt && { startedAt: new Date(task.startedAt) }),
+        ...(task.finishedAt && { finishedAt: new Date(task.finishedAt) }),
+      }) as Task)
+    }
+
     const tasks = storage.get<Task>(STORAGE_KEYS.TASKS)
     return tasks.map(task => ({
       ...task,
@@ -17,9 +29,9 @@ export const taskApi = {
     }) as Task)
   },
 
-  getByStoryId(storyId: string): Promise<Task[]> {
-    const tasks = this.getAll()
-    return Promise.resolve(tasks.filter(t => t.storyId === storyId))
+  async getByStoryId(storyId: string): Promise<Task[]> {
+    const tasks = await this.getAll()
+    return tasks.filter(t => t.storyId === storyId)
   },
 
   saveAll(tasks: Task[]): void {
@@ -27,7 +39,6 @@ export const taskApi = {
   },
 
   async create(storyId: string, taskData: TaskForm): Promise<void> {
-    const tasks = this.getAll()
     const newTask: TodoTask = {
       id: crypto.randomUUID(),
       ...taskData,
@@ -36,11 +47,18 @@ export const taskApi = {
       createdAt: new Date(),
       workedHours: 0,
     }
-    tasks.push(newTask)
-    this.saveAll(tasks)
+
+    if (CONFIG.STORAGE_TYPE === 'database') {
+      await db.create('tasks', newTask)
+    } else {
+      const tasks = await this.getAll()
+      tasks.push(newTask)
+      this.saveAll(tasks)
+    }
 
     // Notify story owner
-    const story = storyApi.getAll().find(s => s.id === storyId)
+    const stories = await storyApi.getAll()
+    const story = stories.find(s => s.id === storyId)
     if (story) {
       await notificationApi.send({
         title: 'Nowe Zadanie',
@@ -51,21 +69,30 @@ export const taskApi = {
     }
   },
 
-  update(taskId: string, updatedData: Partial<Task>): Promise<void> {
-    const tasks = this.getAll()
+  async update(taskId: string, updatedData: Partial<Task>): Promise<void> {
+    if (CONFIG.STORAGE_TYPE === 'database') {
+      await db.update('tasks', taskId, updatedData)
+      return
+    }
+    const tasks = await this.getAll()
     const updatedTasks = tasks.map(t => (t.id === taskId ? { ...t, ...updatedData } : t) as Task)
     this.saveAll(updatedTasks)
-    return Promise.resolve()
   },
 
   async delete(taskId: string): Promise<void> {
-    const tasks = this.getAll()
+    const tasks = await this.getAll()
     const taskToDelete = tasks.find(t => t.id === taskId)
-    const filteredTasks = tasks.filter(t => t.id !== taskId)
-    this.saveAll(filteredTasks)
+    
+    if (CONFIG.STORAGE_TYPE === 'database') {
+      await db.delete('tasks', taskId)
+    } else {
+      const filteredTasks = tasks.filter(t => t.id !== taskId)
+      this.saveAll(filteredTasks)
+    }
 
     if (taskToDelete) {
-      const story = storyApi.getAll().find(s => s.id === taskToDelete.storyId)
+      const stories = await storyApi.getAll()
+      const story = stories.find(s => s.id === taskToDelete.storyId)
       if (story) {
         await notificationApi.send({
           title: 'Zadanie Usunięte',
@@ -78,7 +105,7 @@ export const taskApi = {
   },
 
   async assignUser(taskId: string, userId: string): Promise<void> {
-    const tasks = this.getAll()
+    const tasks = await this.getAll()
     const taskIndex = tasks.findIndex(t => t.id === taskId)
     if (taskIndex === -1) return
 
@@ -95,10 +122,14 @@ export const taskApi = {
       startedAt: new Date(),
     }
 
-    tasks[taskIndex] = updatedTask
-    this.saveAll(tasks)
+    if (CONFIG.STORAGE_TYPE === 'database') {
+      await db.update('tasks', taskId, { status: 'doing', assignee: user, startedAt: updatedTask.startedAt })
+    } else {
+      tasks[taskIndex] = updatedTask
+      this.saveAll(tasks)
+    }
 
-    const stories = storyApi.getAll()
+    const stories = await storyApi.getAll()
     const story = stories.find(s => s.id === updatedTask.storyId)
 
     // Notify assigned user
@@ -119,14 +150,18 @@ export const taskApi = {
       })
 
       if (story.status === 'To Do') {
-        story.status = 'In Progress'
-        storyApi.saveAll(stories)
+        if (CONFIG.STORAGE_TYPE === 'database') {
+          await db.update('stories', story.id, { status: 'In Progress' })
+        } else {
+          story.status = 'In Progress'
+          await storyApi.saveAll(stories)
+        }
       }
     }
   },
 
   async complete(taskId: string, workedHours: number): Promise<void> {
-    const tasks = this.getAll()
+    const tasks = await this.getAll()
     const taskIndex = tasks.findIndex(t => t.id === taskId)
     if (taskIndex === -1) return
 
@@ -140,11 +175,16 @@ export const taskApi = {
       workedHours,
     }
 
-    tasks[taskIndex] = updatedTask
-    this.saveAll(tasks)
+    if (CONFIG.STORAGE_TYPE === 'database') {
+      await db.update('tasks', taskId, { status: 'done', finishedAt: updatedTask.finishedAt, workedHours })
+    } else {
+      tasks[taskIndex] = updatedTask
+      this.saveAll(tasks)
+    }
 
     const storyId = updatedTask.storyId
-    const story = storyApi.getAll().find(s => s.id === storyId)
+    const stories = await storyApi.getAll()
+    const story = stories.find(s => s.id === storyId)
 
     // Notify story owner (status change to done -> medium priority)
     if (story) {
@@ -160,11 +200,15 @@ export const taskApi = {
     const allTasksDone = storyTasks.every(t => t.status === 'done')
 
     if (allTasksDone) {
-      const stories = storyApi.getAll()
-      const currentStory = stories.find(s => s.id === storyId)
+      const stories2 = await storyApi.getAll()
+      const currentStory = stories2.find(s => s.id === storyId)
       if (currentStory) {
-        currentStory.status = 'Done'
-        storyApi.saveAll(stories)
+        if (CONFIG.STORAGE_TYPE === 'database') {
+          await db.update('stories', storyId, { status: 'Done' })
+        } else {
+          currentStory.status = 'Done'
+          await storyApi.saveAll(stories2)
+        }
       }
     }
   }

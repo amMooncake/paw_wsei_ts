@@ -15,14 +15,14 @@ export default function NotificationView({ userId, onBack }: NotificationViewPro
     const [notifications, setNotifications] = useState<Notification[]>([])
     const [selectedId, setSelectedId] = useState<string | null>(null)
 
-    const loadNotifications = () => {
-        const all = notificationApi.getAll()
+    const loadNotifications = async () => {
+        const all = await notificationApi.getAll()
         // Filter for current user only
         setNotifications(all.filter(n => n.recipientId === userId).reverse()) // Newest first
     }
 
     useEffect(() => {
-        loadNotifications()
+        void loadNotifications()
         window.addEventListener('notifications-updated', loadNotifications)
         return () => window.removeEventListener('notifications-updated', loadNotifications)
     }, [userId])

@@ -52,14 +52,14 @@ export default function App() {
   }
 
   useEffect(() => {
-    const updateCount = () => {
+    const updateCount = async () => {
       if (currentUser) {
-        setUnreadCount(notificationApi.getUnreadCount(currentUser.id))
+        setUnreadCount(await notificationApi.getUnreadCount(currentUser.id))
       } else {
         setUnreadCount(0)
       }
     }
-    updateCount()
+    void updateCount()
     window.addEventListener('notifications-updated', updateCount)
     window.addEventListener('new-notification', updateCount)
     return () => {

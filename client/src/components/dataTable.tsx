@@ -41,7 +41,7 @@ export default function DataTable({ projects, setProjects, onOpenProject }: Data
         }
 
         if (!editingId) return
-        projectApi.update({
+        await projectApi.update({
             id: editingId,
             ...editForm,
         })

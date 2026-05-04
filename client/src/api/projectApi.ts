@@ -5,9 +5,14 @@ import { storyApi } from './storyApi'
 import { taskApi } from './taskApi'
 import { userApi } from './userApi'
 import { notificationApi } from './notificationApi'
+import { CONFIG } from '../config'
+import { db } from './db'
 
 export const projectApi = {
   async getAll(): Promise<Project[]> {
+    if (CONFIG.STORAGE_TYPE === 'database') {
+      return db.get<Project>('projects')
+    }
     return storage.get<Project>(STORAGE_KEYS.PROJECTS)
   },
 
@@ -19,13 +24,16 @@ export const projectApi = {
 
 
    async create(data: Omit<Project, 'id'>): Promise<void> {
-    const projectsData = storage.get<Project>(STORAGE_KEYS.PROJECTS)
     const newId = crypto.randomUUID()
-    projectsData.push({
-      id: newId,
-      ...data,
-    })
-    storage.set(STORAGE_KEYS.PROJECTS, projectsData)
+    const project = { id: newId, ...data }
+    
+    if (CONFIG.STORAGE_TYPE === 'database') {
+      await db.create('projects', project)
+    } else {
+      const projectsData = storage.get<Project>(STORAGE_KEYS.PROJECTS)
+      projectsData.push(project)
+      storage.set(STORAGE_KEYS.PROJECTS, projectsData)
+    }
 
     // Notify all admins
     const users = await userApi.getAll()
@@ -41,6 +49,10 @@ export const projectApi = {
   },
 
   async update(project: Project): Promise<void> {
+    if (CONFIG.STORAGE_TYPE === 'database') {
+      await db.update('projects', project.id, project)
+      return
+    }
     const projectsData = storage.get<Project>(STORAGE_KEYS.PROJECTS)
     const index = projectsData.findIndex((p) => p.id === project.id)
     if (index !== -1) {
@@ -50,8 +62,23 @@ export const projectApi = {
   },
 
   async delete(projectId: string): Promise<void> {
+    if (CONFIG.STORAGE_TYPE === 'database') {
+      // 1. Fetch all stories
+      const allStories = await storyApi.getAll()
+      const projectStories = allStories.filter(s => s.projectId === projectId)
+      
+      // 2. Delete each story (storyApi.delete should handle cascade tasks)
+      for (const story of projectStories) {
+        await storyApi.delete(story.id)
+      }
+      
+      // 3. Delete the project itself
+      await db.delete('projects', projectId)
+      return
+    }
+
     // 1. Find all stories for this project to also delete their tasks
-    const allStories = storyApi.getAll()
+    const allStories = await storyApi.getAll()
     const storyIdsToRemove = allStories
       .filter(s => s.projectId === projectId)
       .map(s => s.id)
@@ -63,7 +90,7 @@ export const projectApi = {
 
     // 3. Cascade delete stories
     const remainingStories = allStories.filter(s => s.projectId !== projectId)
-    storyApi.saveAll(remainingStories)
+    await storyApi.saveAll(remainingStories)
 
     // 4. Delete the project itself
     const projects = storage.get<any>(STORAGE_KEYS.PROJECTS).filter((p: any) => p.id !== projectId)
