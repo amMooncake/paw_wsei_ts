@@ -81,7 +81,7 @@ export default function Taskboard({ storyId }: TaskboardProps) {
                     <td><Input value={editingTask.title} onChange={e => setEditingTask({ ...editingTask, title: e.target.value })} /></td>
                     <td><Input value={editingTask.description} onChange={e => setEditingTask({ ...editingTask, description: e.target.value })} /></td>
                     <td>
-                        <select 
+                        <select
                             className="border-2 border-black px-2 py-1 bg-white dark:bg-zinc-800 dark:text-white transition-colors"
                             value={editingTask.priority}
                             onChange={e => setEditingTask({ ...editingTask, priority: e.target.value as any })}
@@ -94,8 +94,8 @@ export default function Taskboard({ storyId }: TaskboardProps) {
                     <td><Input type="number" value={editingTask.estimatedTime} onChange={e => setEditingTask({ ...editingTask, estimatedTime: Number(e.target.value) })} /></td>
                     <td className={tableStyles.actionsCell}>
                         <div className="flex gap-2">
-                             <NeuButton onClick={handleUpdateTask} className="!bg-green-400 p-1"><LuCheck /></NeuButton>
-                             <NeuButton onClick={() => setEditingTask(null)} className="!bg-red-400 p-1"><LuX /></NeuButton>
+                            <NeuButton onClick={handleUpdateTask} className="!bg-green-400 p-1"><LuCheck /></NeuButton>
+                            <NeuButton onClick={() => setEditingTask(null)} className="!bg-red-400 p-1"><LuX /></NeuButton>
                         </div>
                     </td>
                 </tr>
@@ -110,7 +110,11 @@ export default function Taskboard({ storyId }: TaskboardProps) {
                 <td>{task.estimatedTime}h</td>
                 <td>
                     {task.status === 'todo' && (
-                        <select className="border-2 border-black rounded px-1 py-1 bg-white dark:bg-zinc-800 dark:text-white text-xs transition-colors" onChange={(e) => handleAssignUser(task.id, e.target.value)}>
+                        <select
+                            className="border-2 border-black rounded px-1 py-1 bg-white dark:bg-zinc-800 dark:text-white text-xs transition-colors"
+                            data-test="task-assign-select"
+                            onChange={(e) => handleAssignUser(task.id, e.target.value)}
+                        >
                             <option value="">Przypisz...</option>
                             {assignableUsers.map(user => (
                                 <option key={user.id} value={user.id}>{user.name}</option>
@@ -120,14 +124,21 @@ export default function Taskboard({ storyId }: TaskboardProps) {
                     {task.status === 'doing' && (
                         <div className="flex gap-2 items-center">
                             <span className="text-xs font-bold text-blue-600 dark:text-blue-400 underline whitespace-nowrap">{task.assignee.name}</span>
-                            <Input 
-                                type="number" 
-                                placeholder="h" 
-                                className="!w-12 !p-0.5 !text-center !text-xs" 
+                            <Input
+                                type="number"
+                                placeholder="h"
+                                className="!w-12 !p-0.5 !text-center !text-xs"
                                 value={workedHours[task.id] ?? ''}
+                                data-test="task-hours-input"
                                 onChange={e => setWorkedHours({ ...workedHours, [task.id]: Number(e.target.value) })}
                             />
-                            <NeuButton onClick={() => handleCompleteTask(task.id)} className="!bg-emerald-400 !px-2 !py-0.5 !text-[10px] font-black uppercase">Ok</NeuButton>
+                            <NeuButton
+                                onClick={() => handleCompleteTask(task.id)}
+                                data-test="task-complete-button"
+                                className="!bg-emerald-400 !px-2 !py-0.5 !text-[10px] font-black uppercase"
+                            >
+                                Ok
+                            </NeuButton>
                         </div>
                     )}
                     {task.status === 'done' && (
@@ -137,7 +148,7 @@ export default function Taskboard({ storyId }: TaskboardProps) {
                 <td className={tableStyles.actionsCell}>
                     <div className={tableStyles.actionsContainer}>
                         <NeuButton onClick={() => setEditingTask(task)} className="!p-1 !bg-blue-300 dark:!bg-blue-600"><LuPencil /></NeuButton>
-                        <NeuButton onClick={() => handleDeleteTask(task.id)} className="!p-1 !bg-rose-400 dark:!bg-rose-600"><LuTrash2 /></NeuButton>
+                        <NeuButton onClick={() => handleDeleteTask(task.id)} className="!p-1 !bg-rose-400 dark:!bg-rose-600" aria-label="Delete-task"><LuTrash2 /></NeuButton>
                     </div>
                 </td>
             </tr>
@@ -164,12 +175,14 @@ export default function Taskboard({ storyId }: TaskboardProps) {
                         type="text"
                         placeholder="Nazwa Zadania"
                         value={createForm.title}
+                        data-test="task-title-input"
                         onChange={e => setCreateForm({ ...createForm, title: e.target.value })}
                     />
                     <TextArea
                         placeholder="Opis Zadania"
                         className="!h-24"
                         value={createForm.description}
+                        data-test="task-description-input"
                         onChange={e => setCreateForm({ ...createForm, description: e.target.value })}
                     />
                     <select
@@ -185,23 +198,24 @@ export default function Taskboard({ storyId }: TaskboardProps) {
                         type="number"
                         placeholder="Estymacja (h)"
                         value={createForm.estimatedTime}
+                        data-test="task-estimation-input"
                         onChange={e => setCreateForm({ ...createForm, estimatedTime: Number(e.target.value) })}
                     />
-                    <NeuButton type="submit" className="!bg-blue-600 font-black uppercase text-sm py-2">Dodaj</NeuButton>
+                    <NeuButton type="submit" className="!bg-blue-600 font-black uppercase text-sm py-2" data-test="task-add-button">Dodaj</NeuButton>
                 </form>
             </div>
 
             {/* Content Tables */}
             <div className="flex flex-col gap-10 grow overflow-hidden">
-                <TaskTable title="DO ZROBIENIA" headerColor="bg-yellow-300 dark:bg-yellow-600">
+                <TaskTable title="DO ZROBIENIA" headerColor="bg-yellow-300 dark:bg-yellow-600" data-test="todo-tasks-table">
                     {todoTasks.map(renderTaskRow)}
                 </TaskTable>
 
-                <TaskTable title="ROBIĘ" headerColor="bg-blue-300 dark:bg-blue-600">
+                <TaskTable title="ROBIĘ" headerColor="bg-blue-300 dark:bg-blue-600" data-test="doing-tasks-table">
                     {doingTasks.map(renderTaskRow)}
                 </TaskTable>
 
-                <TaskTable title="ZROBIONE" headerColor="bg-green-300 dark:bg-green-600">
+                <TaskTable title="ZROBIONE" headerColor="bg-green-300 dark:bg-green-600" data-test="done-tasks-table">
                     {doneTasks.map(renderTaskRow)}
                 </TaskTable>
             </div>
@@ -209,14 +223,14 @@ export default function Taskboard({ storyId }: TaskboardProps) {
     )
 }
 
-function TaskTable({ title, headerColor, children }: { title: string, headerColor: string, children: React.ReactNode }) {
+function TaskTable({ title, headerColor, children, 'data-test': dataTest }: { title: string, headerColor: string, children: React.ReactNode, 'data-test'?: string }) {
     const hasTasks = React.Children.count(children) > 0;
 
     return (
         <div className="flex flex-col gap-2">
             <h2 className="text-lg font-black uppercase dark:text-white transition-colors">{title}</h2>
             <div className={tableStyles.wrapper}>
-                <table className={tableStyles.table}>
+                <table className={tableStyles.table} data-test={dataTest}>
                     <thead>
                         <tr className={`${tableStyles.headRow} ${headerColor}`}>
                             <th>Nazwa</th>

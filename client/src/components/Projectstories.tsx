@@ -296,7 +296,7 @@ function StoryActionsCell({
                     </NeuButton>
                 }
 
-                <NeuButton className="!bg-purple-300 p-1 text-black" onClick={() => onShowTasks(storyId)} title="Show Tasks" aria-label="Show Tasks">
+                <NeuButton className="!bg-purple-300 p-1 text-black" onClick={() => onShowTasks(storyId)} title="Show Tasks" aria-label="Show-tasks">
                     <LuListTodo className="w-6 h-6 text-black" />
                 </NeuButton>
             </div>

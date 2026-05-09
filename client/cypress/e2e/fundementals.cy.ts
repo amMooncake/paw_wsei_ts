@@ -76,7 +76,7 @@ describe('adding things', () => {
   })
 
 
-  it('add story to project and delete it', () => {
+  it('add story to project, eddie it and delete it', () => {
     loginDemo()
 
     // Ensure the table is loaded
@@ -160,5 +160,85 @@ describe('adding things', () => {
     cy.get('[data-test="inprogress-table"]').should('contain', 'TestStory-updated')
     cy.get('[data-test="done-table"]').should('not.contain', 'TestStory-updated')
 
+  })
+
+
+  it('add task to story and do stuff with it', () => {
+    loginDemo()
+    cy.get('table').should('be.visible')
+
+    // Navigate to the project
+    cy.contains('tr', 'TrackYourBuild')
+      .find('[aria-label="viewProject"]')
+      .should('be.visible')
+      .click()
+
+    // Verify navigation
+    cy.url().should('include', '/project')
+    cy.contains('TrackYourBuild').should('be.visible')
+
+    cy.wait(1000)
+
+
+    cy.contains('TestStory').should('be.visible')
+    cy.wait(500)
+
+    cy.get('[aria-label="Show-tasks"]').click()
+
+    // Ensure Taskboard is loaded
+    cy.get('table').should('be.visible')
+    cy.wait(1000)
+
+    // Cleanup old tasks if they exist
+    const cleanupTasks = () => {
+      cy.get('body').then(($body) => {
+        const $rows = $body.find('tr:contains("TestTask")');
+        if ($rows.length > 0) {
+          cy.wrap($rows.first()).find('[aria-label="Delete-task"]').click({ force: true });
+          cy.wait(1000);
+          cleanupTasks();
+        }
+      });
+    };
+    cleanupTasks();
+
+    // add task here:
+    cy.get('[data-test="task-title-input"]').type('TestTask')
+    cy.get('[data-test="task-description-input"]').type('task description')
+    cy.get('[data-test="task-estimation-input"]').type('5')
+    cy.get('[data-test="task-add-button"]').click()
+
+    // Verify task is in the Todo table
+    cy.get('[data-test="todo-tasks-table"]').should('contain', 'TestTask')
+
+    // 1. Assign user to move to 'Doing'
+    // Wait for the dropdown to populate with users
+    cy.get('[data-test="todo-tasks-table"]')
+      .contains('tr', 'TestTask')
+      .find('[data-test="task-assign-select"]')
+      .find('option')
+      .should('have.length.gt', 1)
+
+    // Select the first user in the list
+    cy.get('[data-test="todo-tasks-table"]')
+      .contains('tr', 'TestTask')
+      .find('[data-test="task-assign-select"]')
+      .select(1)
+
+    // Verify it moved to the Doing table
+    cy.get('[data-test="doing-tasks-table"]').should('contain', 'TestTask')
+    cy.get('[data-test="todo-tasks-table"]').should('not.contain', 'TestTask')
+
+    // 2. Complete the task to move to 'Done'
+    cy.get('[data-test="doing-tasks-table"]')
+      .contains('tr', 'TestTask')
+      .within(() => {
+        cy.get('[data-test="task-hours-input"]').type('3')
+        cy.get('[data-test="task-complete-button"]').click()
+      })
+
+    // Verify it moved to the Done table
+    cy.get('[data-test="done-tasks-table"]').should('contain', 'TestTask')
+    cy.get('[data-test="doing-tasks-table"]').should('not.contain', 'TestTask')
   })
 })
