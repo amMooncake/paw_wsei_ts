@@ -3,7 +3,7 @@ import { Slide, ToastContainer } from 'react-toastify'
 
 import { projectApi } from './api/projectApi'
 import { userApi } from './api/userApi'
-import DataTable from './components/dataTable'
+import DataTable from './components/ProjectdataTable'
 import ProjectForm from './components/ProjectForm'
 import ManageMeLogo from './components/ui/ManageMeLogo'
 import ProjectStories from './components/Projectstories'

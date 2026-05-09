@@ -124,6 +124,7 @@ export default function ProjectStories({ project, onBack, userId }: ProjectStori
                         <Input
                             type="text"
                             value={editForm.title}
+                            data-test="story-edit-title-input"
                             placeholder="Nazwa"
                             onChange={(event) => setEditForm({ ...editForm, title: event.target.value })}
                         />
@@ -135,6 +136,7 @@ export default function ProjectStories({ project, onBack, userId }: ProjectStori
                     {isEditing ? (
                         <Input
                             value={editForm.description}
+                            data-test="story-edit-description-input"
                             placeholder="Opis"
                             onChange={(event) => setEditForm({ ...editForm, description: event.target.value })}
                         />
@@ -206,31 +208,33 @@ export default function ProjectStories({ project, onBack, userId }: ProjectStori
                         <Input
                             type="text"
                             value={createForm.title}
+                            data-test="story-create-title-input"
                             placeholder="Nazwa Historii"
                             onChange={(event) => setCreateForm({ ...createForm, title: event.target.value })}
                         />
 
                         <TextArea
                             value={createForm.description}
+                            data-test="story-create-description-input"
                             placeholder="Opis Historii"
                             onChange={(event) => setCreateForm({ ...createForm, description: event.target.value })}
                         />
 
-                        <NeuButton type='submit' className='bg-blue-700 text-xl font-bold'>
+                        <NeuButton type='submit' className='bg-blue-700 text-xl font-bold' data-test="story-create-add-button">
                             Dodaj
                         </NeuButton>
                     </form>
                     <div className="flex flex-col w-full text-left gap-5">
-                        <StoryTable header="Kiedyś się tym zajme" headerClassName="!bg-yellow-300 dark:!bg-yellow-600" >
+                        <StoryTable header="Kiedyś się tym zajme" headerClassName="!bg-yellow-300 dark:!bg-yellow-600" data-test="todo-table">
                             {stories.filter((story) => story.status === 'To Do').map((story) => renderStoryRow(story))}
 
                         </StoryTable>
 
-                        <StoryTable header="Robię" headerClassName="!bg-blue-300 dark:!bg-blue-600" >
+                        <StoryTable header="Robię" headerClassName="!bg-blue-300 dark:!bg-blue-600" data-test="inprogress-table">
                             {stories.filter((story) => story.status === 'In Progress').map((story) => renderStoryRow(story))}
                         </StoryTable>
 
-                        <StoryTable header="Zrobione" headerClassName="!bg-green-300 dark:!bg-green-600" >
+                        <StoryTable header="Zrobione" headerClassName="!bg-green-300 dark:!bg-green-600" data-test="done-table">
                             {stories.filter((story) => story.status === 'Done').map((story) => renderStoryRow(story))}
                         </StoryTable>
 
@@ -267,10 +271,10 @@ function StoryActionsCell({
     return (
         <td className={tableStyles.actionsCell}>
             <div className={tableStyles.actionsContainer}>
-                <NeuButton className="!bg-amber-200 p-1 text-black" onClick={() => { void onLowerStatus(storyId) }} title="Move down" aria-label="Move down">
+                <NeuButton className="!bg-amber-200 p-1 text-black" onClick={() => { void onLowerStatus(storyId) }} title="Move down" aria-label="Move-down">
                     <LuArrowDown className="w-6 h-6 text-black" />
                 </NeuButton>
-                <NeuButton className="!bg-emerald-200 p-1 text-black" onClick={() => { void onHigherStatus(storyId) }} title="Move up" aria-label="Move up">
+                <NeuButton className="!bg-emerald-200 p-1 text-black" onClick={() => { void onHigherStatus(storyId) }} title="Move up" aria-label="Move-up">
                     <LuArrowUp className="w-6 h-6 text-black" />
                 </NeuButton>
                 <NeuButton className="!bg-orange-300 p-1 text-black" title="Delete" aria-label="Delete" onClick={() => { void onRemove(storyId) }}>
@@ -300,11 +304,11 @@ function StoryActionsCell({
     )
 }
 
-function StoryTable({ children, header, headerClassName }: { children: React.ReactNode, header?: string, headerClassName?: string }) {
+function StoryTable({ children, header, headerClassName, 'data-test': dataTest }: { children: React.ReactNode, header?: string, headerClassName?: string, 'data-test'?: string }) {
     return (
         <div>
             <h2 className={heading2Style}> {header} </h2>
-            <table className={tableStyles.table}>
+            <table className={tableStyles.table} data-test={dataTest}>
                 <thead>
                     <tr className={`${tableStyles.headRow} ${headerClassName}`}>
                         <th>Nazwa</th>

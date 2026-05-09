@@ -48,6 +48,7 @@ export default function ProjectForm({ setProjects }: { setProjects: Dispatch<Set
       <Input
         type="text"
         value={createForm.name}
+        data-test="adding-things-project-name"
         placeholder="Nazwa projektu"
         onChange={(event) => setCreateForm({ ...createForm, name: event.target.value })}
       />
@@ -55,10 +56,11 @@ export default function ProjectForm({ setProjects }: { setProjects: Dispatch<Set
       <Textarea
         value={createForm.description}
         placeholder="Opis projektu"
+        data-test="adding-things-project-info"
         onChange={(event) => setCreateForm({ ...createForm, description: event.target.value })}
       />
 
-      <NeuButton type='submit' className='bg-blue-700 text-xl font-bold'>
+      <NeuButton type='submit' className='bg-blue-700 text-xl font-bold' data-test="adding-things-add-project-button">
         Dodaj
       </NeuButton>
       {/* <button className='border-2' type="button" onClick={projectApi.logAll}> Wyświetl projekty </button> */}

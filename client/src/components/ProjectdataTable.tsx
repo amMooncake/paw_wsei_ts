@@ -91,7 +91,7 @@ export default function DataTable({ projects, setProjects, onOpenProject }: Data
                                 type="text"
                                 className='p-0 px-2 w-full min-w-10'
                                 value={editForm.name}
-                                placeholder="Nazwa projektu"
+                                data-test="project-name-input"
                                 onChange={(event) => setEditForm({ ...editForm, name: event.target.value })} />
                             )}
                         </td>
@@ -103,7 +103,7 @@ export default function DataTable({ projects, setProjects, onOpenProject }: Data
                                     type="text"
                                     className='p-0 px-2 w-full min-w-10'
                                     value={editForm.description}
-                                    placeholder="Opis projektu"
+                                    data-test="project-description-input"
                                     onChange={(event) => setEditForm({ ...editForm, description: event.target.value })} />
                                 )}
                         </td>
@@ -111,10 +111,10 @@ export default function DataTable({ projects, setProjects, onOpenProject }: Data
                             <div className={tableStyles.actionsContainer}>
                                 {editingId === project.id ?
                                     <div className='flex flex-row gap-2'>
-                                        <NeuButton className="!bg-green-400 p-1 text-black" onClick={() => handleEdit()}>
+                                        <NeuButton className="!bg-green-400 p-1 text-black" onClick={() => handleEdit()} aria-label="save" data-test="save-button">
                                             <LuCheck className="w-6 h-6 text-black" />
                                         </NeuButton>
-                                        <NeuButton className="!bg-red-400 p-1 text-black" onClick={() => handleCanelEdit()}>
+                                        <NeuButton className="!bg-red-400 p-1 text-black" onClick={() => handleCanelEdit()} aria-label="cancel">
                                             <LuX className="w-6 h-6 text-black" />
                                         </NeuButton>
                                     </div>
