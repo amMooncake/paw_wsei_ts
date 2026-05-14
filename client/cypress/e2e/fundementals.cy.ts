@@ -1,9 +1,8 @@
-const loginDemo = () => {
+const login = () => {
   cy.visit('http://localhost:5173/')
-  cy.contains('Użyj logowania demo').click()
+  cy.contains('Zaloguj się').click()
   cy.get('input[type="email"]').type('test@example.com')
-  cy.get('input[placeholder="Imię"]').type('Jan')
-  cy.get('input[placeholder="Nazwisko"]').type('Kowalski')
+  cy.get('input[type="password"]').type('password123')
   cy.contains('Zaloguj').click()
   cy.contains('ManageMe')
 }
@@ -15,7 +14,7 @@ describe('auth', () => {
   })
 
   it('allows user to login via demo', () => {
-    loginDemo()
+    login()
   })
 
 })
@@ -23,7 +22,7 @@ describe('auth', () => {
 
 describe('adding things', () => {
   it('add, delete and modify project', () => {
-    loginDemo()
+    login()
 
     // 1. Wait for table to load, then delete all existing "TrackYourBuild" projects
     cy.get('table').should('be.visible')
@@ -77,7 +76,7 @@ describe('adding things', () => {
 
 
   it('add story to project, eddie it and delete it', () => {
-    loginDemo()
+    login()
 
     // Ensure the table is loaded
     cy.get('table').should('be.visible')
@@ -164,7 +163,7 @@ describe('adding things', () => {
 
 
   it('add task to story and do stuff with it', () => {
-    loginDemo()
+    login()
     cy.get('table').should('be.visible')
 
     // Navigate to the project
