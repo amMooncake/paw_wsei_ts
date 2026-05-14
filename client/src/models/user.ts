@@ -3,6 +3,7 @@ export interface BaseUser {
     name: string;
     lastName: string;
     email: string;
+    password?: string;
     isBlocked?: boolean;
 }
 

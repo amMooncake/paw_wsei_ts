@@ -92,4 +92,3 @@ createCrudRoutes('Story', Story);
 createCrudRoutes('Task', Task);
 createCrudRoutes('Notification', Notification);
 
-// Special routes if needed can be added below

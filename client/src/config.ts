@@ -1,7 +1,7 @@
 export const CONFIG = {
-    SUPER_ADMIN_EMAIL: 'alekmalawski123@gmail.com',
-    GOOGLE_CLIENT_ID: '674236225999-4notmg6ee4p7o0ooe9412h50n41u7f63.apps.googleusercontent.com',
-    STORAGE_TYPE: 'database' as 'localStorage' | 'database',
-    API_URL: 'http://localhost:3001/api'
+    SUPER_ADMIN_EMAIL: import.meta.env.VITE_SUPER_ADMIN_EMAIL as string,
+    GOOGLE_CLIENT_ID: import.meta.env.VITE_GOOGLE_CLIENT_ID as string,
+    STORAGE_TYPE: import.meta.env.VITE_STORAGE_TYPE as 'localStorage' | 'database',
+    API_URL: import.meta.env.VITE_API_URL as string,
 };
 

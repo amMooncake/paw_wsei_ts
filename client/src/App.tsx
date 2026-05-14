@@ -21,6 +21,7 @@ import UserListView from './components/UserListView'
 
 
 // for dev
+// I can modify data with console
 declare global {
   interface Window {
     projectApi: typeof projectApi

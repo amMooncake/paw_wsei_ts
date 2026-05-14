@@ -74,6 +74,65 @@ export const userApi = {
         return user
     },
 
+    async loginWithPassword(email: string, password: string): Promise<MyUser> {
+        const users = await this.getAll()
+        const byEmail = users.find(u => u.email === email)
+        if (!byEmail) throw new Error('Nie znaleziono konta z tym e-mailem.')
+        if (!byEmail.password) throw new Error('To konto używa logowania przez Google.')
+        if (byEmail.password !== password) throw new Error('Nieprawidłowe hasło.')
+        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(byEmail))
+        return byEmail
+    },
+
+    async register(email: string, password: string, name: string, lastName: string): Promise<MyUser> {
+        const users = await this.getAll()
+        const existing = users.find(u => u.email === email)
+        if (existing) {
+            if (existing.password) throw new Error('Użytkownik z tym e-mailem już istnieje.')
+            // Google account — just set the password
+            if (CONFIG.STORAGE_TYPE === 'database') {
+                await db.update('users', existing.id, { password })
+            } else {
+                existing.password = password
+                storage.set(STORAGE_KEYS.USERS, users)
+            }
+            existing.password = password
+            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(existing))
+            return existing
+        }
+
+        const isSuperAdmin = email === CONFIG.SUPER_ADMIN_EMAIL
+        const user: MyUser = {
+            id: crypto.randomUUID(),
+            email,
+            password,
+            name,
+            lastName,
+            role: isSuperAdmin ? 'admin' : 'guest',
+            isBlocked: false,
+        }
+
+        if (CONFIG.STORAGE_TYPE === 'database') {
+            await db.create('users', user)
+        } else {
+            users.push(user)
+            storage.set(STORAGE_KEYS.USERS, users)
+        }
+
+        const admins = users.filter(u => u.role === 'admin')
+        for (const admin of admins) {
+            await notificationApi.send({
+                recipientId: admin.id,
+                title: 'Nowy użytkownik',
+                message: `Utworzono nowe konto w systemie: ${name} ${lastName} (${email})`,
+                priority: 'high',
+            })
+        }
+
+        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user))
+        return user
+    },
+
     async logout(): Promise<void> {
         localStorage.removeItem(STORAGE_KEYS.CURRENT_USER)
     },

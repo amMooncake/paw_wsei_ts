@@ -23,10 +23,10 @@ export const projectApi = {
 
 
 
-   async create(data: Omit<Project, 'id'>): Promise<void> {
+  async create(data: Omit<Project, 'id'>): Promise<void> {
     const newId = crypto.randomUUID()
     const project = { id: newId, ...data }
-    
+
     if (CONFIG.STORAGE_TYPE === 'database') {
       await db.create('projects', project)
     } else {
@@ -63,36 +63,29 @@ export const projectApi = {
 
   async delete(projectId: string): Promise<void> {
     if (CONFIG.STORAGE_TYPE === 'database') {
-      // 1. Fetch all stories
       const allStories = await storyApi.getAll()
       const projectStories = allStories.filter(s => s.projectId === projectId)
-      
-      // 2. Delete each story (storyApi.delete should handle cascade tasks)
+
       for (const story of projectStories) {
         await storyApi.delete(story.id)
       }
-      
-      // 3. Delete the project itself
+
       await db.delete('projects', projectId)
       return
     }
 
-    // 1. Find all stories for this project to also delete their tasks
     const allStories = await storyApi.getAll()
     const storyIdsToRemove = allStories
       .filter(s => s.projectId === projectId)
       .map(s => s.id)
 
-    // 2. Cascade delete tasks
     const allTasks = storage.get<any>(STORAGE_KEYS.TASKS)
     const remainingTasks = allTasks.filter((t: any) => !storyIdsToRemove.includes(t.storyId))
     storage.set(STORAGE_KEYS.TASKS, remainingTasks)
 
-    // 3. Cascade delete stories
     const remainingStories = allStories.filter(s => s.projectId !== projectId)
     await storyApi.saveAll(remainingStories)
 
-    // 4. Delete the project itself
     const projects = storage.get<any>(STORAGE_KEYS.PROJECTS).filter((p: any) => p.id !== projectId)
     storage.set(STORAGE_KEYS.PROJECTS, projects)
   },
